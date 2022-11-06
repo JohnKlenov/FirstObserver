@@ -1,0 +1,430 @@
+//
+//  HomeViewController.swift
+//  FirstObserver
+//
+//  Created by Evgenyi on 8.08.22.
+//
+
+// точка входа - HomeViewControllerю
+//  if [userName:nil] { let randomUID(+ String("RANDOM")) + ref in UserAccaunt at UID } else { не создаем }
+// SignInViewController -> if creatUser {
+// save email for user.uid in Realtime Database
+// мы переименуем iserAccaunt(тот что мы сами сгенерировали на тот который сгенерировал Firebase) это если он был создан(есть идея добавить кнопку перейти к авторизации/регистрации на экране onboardingVC).
+// иначе просто создаем UserAccaunt
+// let userRef = self.ref.child((result?.user.uid)!)
+// userRef.setValue(["email": result?.user.email])}
+
+
+
+
+
+
+import UIKit
+import FirebaseAuth
+import Firebase
+import FirebaseStorage
+import FirebaseStorageUI
+import MapKit
+
+
+enum SwitchCaseNavigationHomeVC {
+    case popularProductCell
+    case brandCell
+    case shopingMall
+}
+
+protocol NavigationHomeVCDelegate: AnyObject {
+    func  destinationVC(indexPath: Int, forCell: SwitchCaseNavigationHomeVC, refPath: String)
+}
+
+class HomeViewController: UIViewController {
+    
+    @IBOutlet weak var homeTableView: UITableView!
+    
+    
+    lazy var topView = UIView()
+    static let userDefaults = UserDefaults.standard
+    
+    
+    var homeModel = [HomeModel]()
+    
+   
+    
+    var ref: DatabaseReference!
+    var storage:Storage!
+    
+    
+    
+    var arrayInArray = [String:Any]() {
+        didSet {
+            if arrayInArray.count == 3 {
+//                print("arrayInArray arrayInArray arrayInArray")
+                self.homeTableView.reloadData()
+            }
+        }
+    }
+    
+    var arrayPin:[PlacesTest] = []
+    var arrayPins:[PlacesFB] = [] {
+        didSet {
+//            print("arrayPins didSet arrayPins didSet arrayPins didSet")
+            getPlaces()
+        }
+    }
+   
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        storage = Storage.storage()
+        ref = Database.database().reference()
+
+        
+        if Auth.auth().currentUser == nil {
+            
+            let refFBR = Database.database().reference().child("usersAccaunt")
+            Auth.auth().signInAnonymously { (authResult, error) in
+                guard let user = authResult?.user else {return}
+                let uid = user.uid
+                refFBR.child(uid)
+                refFBR.setValue(["uid":user.uid])
+            }
+        } else {
+            print("user no null!")
+        }
+        
+        
+        
+        self.title = "Observer"
+        calculateHeightCell()
+        homeTableView.dataSource = self
+        homeTableView.delegate = self
+        addTopView()
+    }
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        ref.child("previewMalls").observe(.value) { [weak self] (snapshot) in
+            var arrayMalls = [PreviewCategory]()
+            for item in snapshot.children {
+                let mall = item as! DataSnapshot
+                let model = PreviewCategory(snapshot: mall)
+                arrayMalls.append(model)
+            }
+            
+            self?.arrayInArray["malls"] = arrayMalls
+            
+        }
+        
+        ref.child("previewBrands").observe(.value) { [weak self] (snapshot) in
+            
+            var arrayBrands = [PreviewCategory]()
+            for item in snapshot.children {
+                let brand = item as! DataSnapshot
+                let model = PreviewCategory(snapshot: brand)
+                arrayBrands.append(model)
+            }
+            
+            self?.arrayInArray["brands"] = arrayBrands
+        }
+        
+        
+        ref.child("popularProduct").observe(.value) { [weak self] (snapshot) in
+            
+            var arrayProduct = [PopularProduct]()
+            
+            for item in snapshot.children {
+                let product = item as! DataSnapshot
+                
+                var arrayMalls = [String]()
+                var arrayRefe = [String]()
+                
+                
+                for mass in product.children {
+                    let item = mass as! DataSnapshot
+                    
+                    switch item.key {
+                    case "malls":
+                        for it in item.children {
+                            let item = it as! DataSnapshot
+                            if let refDictionary = item.value as? String {
+                                arrayMalls.append(refDictionary)
+                            }
+                        }
+                        
+                    case "refImage":
+                        for it in item.children {
+                            let item = it as! DataSnapshot
+                            if let refDictionary = item.value as? String {
+                                arrayRefe.append(refDictionary)
+                            }
+                        }
+                    default:
+                        break
+                    }
+                    
+                }
+                let productModel = PopularProduct(snapshot: product, refArray: arrayRefe, malls: arrayMalls)
+                arrayProduct.append(productModel)
+            }
+            self?.arrayInArray["popularProduct"] = arrayProduct
+        }
+        
+        
+        ref.child("Places").observe(.value) {  [weak self] (snapshot) in
+            
+            var arrayPin = [PlacesFB]()
+            for place in snapshot.children {
+//                print("ref Places snapshot")
+                let place = place as! DataSnapshot
+                let model = PlacesFB(snapshot: place)
+                arrayPin.append(model)
+                
+            }
+            self?.arrayPins = arrayPin
+        }
+        removeTopView()
+    }
+    
+    
+    func getPlaces() {
+        
+//        print(" getPlaces getPlaces getPlaces getPlaces")
+        
+        
+        let tcNew = arrayPins.map { $0.name }
+        let tcOld = arrayPin.map { $0.title ?? " " }
+//        print("count tcNew - \(tcNew)")
+//        print("count tcOld - \(tcOld)")
+        
+        let oldPins = Set(tcOld)
+        let newPins = Set(tcNew)
+        
+//        print("count newPins - \(newPins)")
+//        print("count oldPins - \(oldPins)")
+        
+        if oldPins != newPins {
+            
+//            print("oldPins != newPins oldPins != newPins oldPins != newPins oldPins != newPins oldPins != newPins")
+            arrayPins.forEach { (place) in
+                self.getImagefromStorage(refImage: place.refImage) { (image) in
+                    let pin = PlacesTest(title: place.name, locationName: place.address, discipline: "Торговый центр", coordinate: CLLocationCoordinate2D(latitude: place.latitude, longitude: place.longitude), image: image)
+                    self.arrayPin.append(pin)
+                }
+            }
+        }
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        startPresentation()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        ref.removeAllObservers()
+    }
+    
+    
+    
+
+    private func getImagefromStorage(refImage:String, completionHandler: @escaping (UIImage) -> Void) {
+        let ref = storage.reference(forURL: refImage)
+        let megaBite = Int64(1*1024*1024)
+        ref.getData(maxSize: megaBite) { (data, error) in
+            guard let imageData = data else {
+                let defaultImage = UIImage(named: "DefaultImage")!
+                completionHandler(defaultImage)
+                return
+            }
+            if let image = UIImage(data: imageData) {
+                completionHandler(image)
+            }
+        }
+    }
+    
+    // MARK: - im Hiding HomeViewController -
+    
+    private func configureView() {
+        
+        let rootFrame = UIScreen.main.bounds
+        topView.frame = rootFrame
+        topView.backgroundColor = .black
+        self.view.addSubview(topView)
+    }
+    
+    private func addTopView() {
+        let appAlreadeSeen = HomeViewController.userDefaults.bool(forKey: "appAlreadeSeen")
+        if appAlreadeSeen == false {
+            configureView()
+        }
+    }
+    
+    private func removeTopView() {
+        let appAlreadeSeen = HomeViewController.userDefaults.bool(forKey: "appAlreadeSeen")
+        if appAlreadeSeen == true {
+            self.deleteView()
+        }
+    }
+    
+    func deleteView() {
+        topView.removeFromSuperview()
+    }
+        
+    
+    
+    
+    // MARK: - Start Onboarding -
+    
+        func startPresentation() {
+//            HomeViewController.userDefaults.set(false, forKey: "appAlreadeSeen")
+            let appAlreadeSeen = HomeViewController.userDefaults.bool(forKey: "appAlreadeSeen")
+            if appAlreadeSeen == false {
+                if let pageViewController = storyboard?.instantiateViewController(withIdentifier: "PageViewController") as? PageViewController {
+                    pageViewController.modalPresentationStyle = .fullScreen
+                    self.present(pageViewController, animated: true, completion: nil)
+                }
+            }
+        }
+    
+    
+    
+    
+    // MARK: - TableViewCell Calculate height -
+    
+    
+    func calculateHeightCell() {
+    
+        
+        let heightTableViewFrame = homeTableView.frame.height
+        
+        let soppingModel = HomeModel(heightCell: heightTableViewFrame * CGFloat(0.3))
+        let brandModel = HomeModel(heightCell: heightTableViewFrame * CGFloat(0.2))
+//        let productModel = HomeModel(heightCell: heightTableViewFrame)
+        
+        homeModel = [soppingModel, brandModel]
+        
+    }
+    
+}
+
+
+
+
+
+// MARK: - DataSource and Delegate Table View -
+
+
+extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return arrayInArray.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        switch indexPath.row {
+        case 0:
+            print("ShopingMall ShopingMall ShopingMall")
+            let shopingCell = tableView.dequeueReusableCell(withIdentifier: "ShopingMall") as! ShopingMallCell
+            let malls = arrayInArray["malls"] as! [PreviewCategory]
+            
+            shopingCell.configureCell(arrayMalls: malls)
+            
+            shopingCell.backgroundColor = .black
+            return shopingCell
+        case 1:
+            print("BrandCell BrandCell BrandCell")
+            let brandCell = tableView.dequeueReusableCell(withIdentifier: "BrandCell") as! BrandCell
+            let brands = arrayInArray["brands"] as! [PreviewCategory]
+            brandCell.configureCell(arrayBrands: brands)
+            brandCell.delegate = self
+            brandCell.backgroundColor = .blue
+            return brandCell
+        case 2:
+            print("PopularProductCell PopularProductCell PopularProductCell")
+            let popularCell = tableView.dequeueReusableCell(withIdentifier: "PopularProductCell") as! PopularProductCell
+            popularCell.delegate = self
+            let product = arrayInArray["popularProduct"] as! [PopularProduct]
+            popularCell.configureCell(arrayProduct: product)
+            popularCell.backgroundColor = .brown
+            return popularCell
+        default:
+            print("Error")
+            return UITableViewCell()
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        
+        switch indexPath.row {
+        case 0:
+            return homeModel[indexPath.row].heightTableViewCell
+        case 1:
+            return homeModel[indexPath.row].heightTableViewCell
+        case 2:
+
+            return UITableView.automaticDimension
+        default:
+            print("Error")
+            return CGFloat()
+        }
+    }
+    
+}
+
+
+
+//extension HomeViewController: HomeViewControllerDelegate {
+//
+//    func goToBrandsVC(_ indexPath: Int) {
+//        print("\(indexPath)")
+//        performSegue(withIdentifier: "goToBrandVC", sender: nil)
+//    }
+//
+//}
+//
+
+extension HomeViewController: NavigationHomeVCDelegate {
+    func  destinationVC(indexPath: Int, forCell: SwitchCaseNavigationHomeVC, refPath: String) {
+        
+        switch forCell {
+        
+        case .popularProductCell:
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let productVC = storyboard.instantiateViewController(withIdentifier: "ProductViewController") as! ProductViewController
+            let product = self.arrayInArray["popularProduct"] as! [PopularProduct]
+            
+            var placesArray:[PlacesTest] = []
+            let malls = product[indexPath].malls
+            arrayPin.forEach { (places) in
+                if malls.contains(places.title ?? "") {
+                    placesArray.append(places)
+                }
+            }
+            productVC.fireBaseModel = product[indexPath]
+            productVC.arrayPin = placesArray
+            self.navigationController?.pushViewController(productVC, animated: true)
+            // передать делегат
+        case .brandCell:
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let brandVC = storyboard.instantiateViewController(withIdentifier: "BrandsViewController") as! BrandsViewController
+            let ref = Database.database().reference(withPath: "brands/\(refPath)")
+            brandVC.incomingRef = ref
+            self.navigationController?.pushViewController(brandVC, animated: true)
+            
+        case .shopingMall:
+            break
+        }
+
+    }
+    
+    
+}
+
+
+    
+    
+
