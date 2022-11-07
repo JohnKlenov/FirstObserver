@@ -8,22 +8,42 @@
 import UIKit
 
 class MallViewController: UIViewController {
-
+    
+    @IBOutlet weak var segmentControll: UISegmentedControl!
+    @IBOutlet weak var collectionView: UICollectionView!
+    
+    var hightCellVC: CGFloat!
+    let arrayTest = ["GreenCity", "DanaMall", "Castle", "Rock", "GalleryMinsk"]
+    var modelC = [Model]()
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        self.title = "Malls"
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        
+        hightCellVC = (collectionView.frame.height/3)*0.86
+        
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
+
+extension MallViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return arrayTest.count
+    }
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MallCollectionViewCell", for: indexPath) as! MallCollectionViewCell
+        cell.configureCell(model: arrayTest[indexPath.item])
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: collectionView.frame.width - 20, height: hightCellVC)
+    }
+   
+}
+
+

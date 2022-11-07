@@ -239,6 +239,7 @@ extension BrandsViewController : UICollectionViewDelegate, UICollectionViewDataS
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
+    
         if collectionView == groupsCollectionView {
             
 //            selectedGroup = menu.groups.first?.groups?[indexPath.item]

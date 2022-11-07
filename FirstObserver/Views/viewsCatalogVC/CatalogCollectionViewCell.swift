@@ -14,6 +14,7 @@ class CatalogCollectionViewCell: UICollectionViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         self.layer.cornerRadius = 10
+        print("CatalogCollectionViewCell frameCell = \(self.frame)")
     }
     
     func setupCell(image: UIImage) {
