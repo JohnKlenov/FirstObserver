@@ -35,7 +35,7 @@
 		5E7EF56B28A12DBF00814F4D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5E7EF56928A12DBF00814F4D /* LaunchScreen.storyboard */; };
 		5E7EF57328A13B6300814F4D /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF57228A13B6300814F4D /* HomeViewController.swift */; };
 		5E7EF57528A13BB300814F4D /* CatalogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF57428A13BB300814F4D /* CatalogViewController.swift */; };
-		5E7EF57728A13BF600814F4D /* MallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF57628A13BF600814F4D /* MallViewController.swift */; };
+		5E7EF57728A13BF600814F4D /* MallsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF57628A13BF600814F4D /* MallsViewController.swift */; };
 		5E7EF57928A13C2500814F4D /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF57828A13C2500814F4D /* ProfileViewController.swift */; };
 		5E7EF57B28A149A500814F4D /* PageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF57A28A149A500814F4D /* PageViewController.swift */; };
 		5E7EF57D28A14A0600814F4D /* ContentPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF57C28A14A0600814F4D /* ContentPageViewController.swift */; };
@@ -88,7 +88,7 @@
 		5E7EF56C28A12DBF00814F4D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5E7EF57228A13B6300814F4D /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		5E7EF57428A13BB300814F4D /* CatalogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogViewController.swift; sourceTree = "<group>"; };
-		5E7EF57628A13BF600814F4D /* MallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallViewController.swift; sourceTree = "<group>"; };
+		5E7EF57628A13BF600814F4D /* MallsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallsViewController.swift; sourceTree = "<group>"; };
 		5E7EF57828A13C2500814F4D /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		5E7EF57A28A149A500814F4D /* PageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageViewController.swift; sourceTree = "<group>"; };
 		5E7EF57C28A14A0600814F4D /* ContentPageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentPageViewController.swift; sourceTree = "<group>"; };
@@ -230,7 +230,7 @@
 				5E7EF59228AE3A6400814F4D /* OnboardVC */,
 				5E7EF57828A13C2500814F4D /* ProfileViewController.swift */,
 				5E8DC52528D5BCB400275138 /* ContaktMallViewController.swift */,
-				5E7EF57628A13BF600814F4D /* MallViewController.swift */,
+				5E7EF57628A13BF600814F4D /* MallsViewController.swift */,
 				5E7EF57428A13BB300814F4D /* CatalogViewController.swift */,
 				5E7EF57228A13B6300814F4D /* HomeViewController.swift */,
 				5E7EF56228A12DBB00814F4D /* CartViewController.swift */,
@@ -450,7 +450,7 @@
 				5E7EF58328A51B7E00814F4D /* PopularProductCell.swift in Sources */,
 				5E8DC52628D5BCB400275138 /* ContaktMallViewController.swift in Sources */,
 				5E7EF57D28A14A0600814F4D /* ContentPageViewController.swift in Sources */,
-				5E7EF57728A13BF600814F4D /* MallViewController.swift in Sources */,
+				5E7EF57728A13BF600814F4D /* MallsViewController.swift in Sources */,
 				5E731C9628E4441200AF3A21 /* SignUpViewController.swift in Sources */,
 				5EC4764F290D816C0077D940 /* DynamicHeightCollectionView.swift in Sources */,
 				5E759F1528BE2A0000D17F13 /* CollectionViewCellProduct.swift in Sources */,

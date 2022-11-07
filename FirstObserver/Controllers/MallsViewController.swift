@@ -7,7 +7,7 @@
 
 import UIKit
 
-class MallViewController: UIViewController {
+class MallsViewController: UIViewController {
     
     @IBOutlet weak var segmentControll: UISegmentedControl!
     @IBOutlet weak var collectionView: UICollectionView!
@@ -28,7 +28,7 @@ class MallViewController: UIViewController {
     
 }
 
-extension MallViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+extension MallsViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return arrayTest.count
