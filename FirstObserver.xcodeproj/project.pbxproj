@@ -27,6 +27,7 @@
 		5E759F1528BE2A0000D17F13 /* CollectionViewCellProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E759F1328BE2A0000D17F13 /* CollectionViewCellProduct.swift */; };
 		5E759F1628BE2A0000D17F13 /* CollectionViewCellProduct.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5E759F1428BE2A0000D17F13 /* CollectionViewCellProduct.xib */; };
 		5E7C7E2B2919555200AC57CB /* MallCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7C7E2A2919555200AC57CB /* MallCollectionViewCell.swift */; };
+		5E7C7E2F29196BF200AC57CB /* MallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7C7E2E29196BF200AC57CB /* MallViewController.swift */; };
 		5E7EF55F28A12DBB00814F4D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF55E28A12DBB00814F4D /* AppDelegate.swift */; };
 		5E7EF56128A12DBB00814F4D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF56028A12DBB00814F4D /* SceneDelegate.swift */; };
 		5E7EF56328A12DBB00814F4D /* CartViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF56228A12DBB00814F4D /* CartViewController.swift */; };
@@ -78,6 +79,7 @@
 		5E759F1328BE2A0000D17F13 /* CollectionViewCellProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewCellProduct.swift; sourceTree = "<group>"; };
 		5E759F1428BE2A0000D17F13 /* CollectionViewCellProduct.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CollectionViewCellProduct.xib; sourceTree = "<group>"; };
 		5E7C7E2A2919555200AC57CB /* MallCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallCollectionViewCell.swift; sourceTree = "<group>"; };
+		5E7C7E2E29196BF200AC57CB /* MallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MallViewController.swift; sourceTree = "<group>"; };
 		5E7EF55B28A12DBB00814F4D /* FirstObserver.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FirstObserver.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E7EF55E28A12DBB00814F4D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5E7EF56028A12DBB00814F4D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -238,6 +240,7 @@
 				5E139C5928C4BEF9004F963D /* AllProductViewController.swift */,
 				5E175A4228CB6ED000773C77 /* ProductViewController.swift */,
 				5E8DC52728D5DEF000275138 /* MapViewController.swift */,
+				5E7C7E2E29196BF200AC57CB /* MallViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -462,6 +465,7 @@
 				5E7EF58728A7F5A900814F4D /* ShopingCollectionViewCell.swift in Sources */,
 				5E7EF59428AE3F2900814F4D /* BrandsCollectionViewCell.swift in Sources */,
 				5E7EF57928A13C2500814F4D /* ProfileViewController.swift in Sources */,
+				5E7C7E2F29196BF200AC57CB /* MallViewController.swift in Sources */,
 				5E8DC52C28D9F37C00275138 /* CustomMapViewProduct.swift in Sources */,
 				5E7EF56128A12DBB00814F4D /* SceneDelegate.swift in Sources */,
 				5E7EF57328A13B6300814F4D /* HomeViewController.swift in Sources */,
