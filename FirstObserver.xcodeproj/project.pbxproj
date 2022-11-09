@@ -53,6 +53,7 @@
 		5E8DC52628D5BCB400275138 /* ContaktMallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8DC52528D5BCB400275138 /* ContaktMallViewController.swift */; };
 		5E8DC52828D5DEF100275138 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8DC52728D5DEF000275138 /* MapViewController.swift */; };
 		5E8DC52C28D9F37C00275138 /* CustomMapViewProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8DC52B28D9F37C00275138 /* CustomMapViewProduct.swift */; };
+		5E9101DC291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9101DB291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift */; };
 		5EC4764F290D816C0077D940 /* DynamicHeightCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC4764E290D816C0077D940 /* DynamicHeightCollectionView.swift */; };
 /* End PBXBuildFile section */
 
@@ -107,6 +108,7 @@
 		5E8DC52528D5BCB400275138 /* ContaktMallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContaktMallViewController.swift; sourceTree = "<group>"; };
 		5E8DC52728D5DEF000275138 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		5E8DC52B28D9F37C00275138 /* CustomMapViewProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMapViewProduct.swift; sourceTree = "<group>"; };
+		5E9101DB291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageMallCollectionViewCell.swift; sourceTree = "<group>"; };
 		5EC4764E290D816C0077D940 /* DynamicHeightCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicHeightCollectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -248,6 +250,7 @@
 		5E7EF58528A53B5000814F4D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				5E9101D8291B94EE00D37E92 /* viewsMallVC */,
 				5E7C7E292919551B00AC57CB /* viewsMallsVC */,
 				5E139C5B28C4C99D004F963D /* xibCartVC */,
 				5E139C5628C1FA43004F963D /* viewsCatalogVC */,
@@ -304,6 +307,14 @@
 				5E7EF57A28A149A500814F4D /* PageViewController.swift */,
 			);
 			path = OnboardVC;
+			sourceTree = "<group>";
+		};
+		5E9101D8291B94EE00D37E92 /* viewsMallVC */ = {
+			isa = PBXGroup;
+			children = (
+				5E9101DB291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift */,
+			);
+			path = viewsMallVC;
 			sourceTree = "<group>";
 		};
 		6D3BA102568E072BE2F6CA13 /* Frameworks */ = {
@@ -477,6 +488,7 @@
 				5E7EF58128A51B2A00814F4D /* BrandCell.swift in Sources */,
 				5E890BBC290AB57E00147C5F /* ModelFB.swift in Sources */,
 				5E7EF59628AE5B2200814F4D /* ProductCollectionViewCell.swift in Sources */,
+				5E9101DC291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift in Sources */,
 				5E759F0A28BDF12C00D17F13 /* ProductCell.swift in Sources */,
 				5E759F0028BA613500D17F13 /* BrandsViewController.swift in Sources */,
 				5E8DC52828D5DEF100275138 /* MapViewController.swift in Sources */,
