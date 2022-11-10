@@ -728,11 +728,19 @@
                                                     </collectionViewCell>
                                                 </cells>
                                             </collectionView>
+                                            <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="EyR-6h-A3v">
+                                                <rect key="frame" x="157.66666666666666" y="274" width="112.99999999999997" height="25"/>
+                                                <connections>
+                                                    <action selector="changePageControl:" destination="Usr-4n-tDe" eventType="valueChanged" id="TXV-eg-zRm"/>
+                                                </connections>
+                                            </pageControl>
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBrownColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="1500" id="RYG-N3-nlN"/>
                                             <constraint firstAttribute="trailing" secondItem="kzc-MQ-Mwm" secondAttribute="trailing" id="U4Q-1F-BOn"/>
+                                            <constraint firstItem="EyR-6h-A3v" firstAttribute="top" secondItem="qE8-g3-Go0" secondAttribute="top" constant="274" id="WcJ-LC-hGR"/>
+                                            <constraint firstItem="EyR-6h-A3v" firstAttribute="centerX" secondItem="qE8-g3-Go0" secondAttribute="centerX" id="jrT-4R-jtz"/>
                                             <constraint firstItem="kzc-MQ-Mwm" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" id="m67-xI-gDe"/>
                                             <constraint firstItem="kzc-MQ-Mwm" firstAttribute="top" secondItem="qE8-g3-Go0" secondAttribute="top" id="wmr-Ko-AeK"/>
                                         </constraints>
@@ -761,6 +769,8 @@
                     <connections>
                         <outlet property="heightCollectionView" destination="bMV-Hu-U0z" id="jRB-oi-XhX"/>
                         <outlet property="mallCollectionView" destination="kzc-MQ-Mwm" id="XXm-MI-wtD"/>
+                        <outlet property="pageControl" destination="EyR-6h-A3v" id="dTe-TX-ACP"/>
+                        <outlet property="topCnstrPageControl" destination="WcJ-LC-hGR" id="Nbb-wa-4ZK"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yBp-lD-ZL3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

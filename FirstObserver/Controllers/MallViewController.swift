@@ -13,11 +13,12 @@ class MallViewController: UIViewController {
     
     // MARK: - outlet property -
     @IBOutlet weak var mallCollectionView: UICollectionView!
+    @IBOutlet weak var pageControl: UIPageControl!
     
     // MARK: - constraints from outlet -
     
     @IBOutlet weak var heightCollectionView: NSLayoutConstraint!
-    
+    @IBOutlet weak var topCnstrPageControl: NSLayoutConstraint!
     
     // MARK: - another property -
     
@@ -30,6 +31,10 @@ class MallViewController: UIViewController {
         mallCollectionView.delegate = self
         mallCollectionView.dataSource = self
 
+        pageControl.numberOfPages = testModel.count
+        pageControl.currentPage = 0
+        pageControl.pageIndicatorTintColor = .systemBrown
+        pageControl.currentPageIndicatorTintColor = .black
         
     }
     
@@ -39,14 +44,32 @@ class MallViewController: UIViewController {
     }
     
     
+    @IBAction func changePageControl(_ sender: UIPageControl) {
+        
+        mallCollectionView.scrollToItem(at: IndexPath(item: sender.currentPage, section: 0), at: .centeredHorizontally, animated: true)
+    }
+    
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        let currentPage = Int(scrollView.contentOffset.x) / Int(scrollView.frame.width)
+        pageControl.currentPage = currentPage
+    }
+    
+    
+    
     // MARK: - calculate constraint -
     
     
     private func setupConstraint() {
+        
+        // heightCollectionView
         let guide = self.view.safeAreaLayoutGuide
         let heightSafeArea = guide.layoutFrame.height
         print("heightSafeArea - \(heightSafeArea)")
         heightCollectionView.constant = heightSafeArea*0.35
+        
+        // topCnstrPageControl
+        let hCV = heightSafeArea*0.35
+        topCnstrPageControl.constant = hCV - 30
     }
     
 }
