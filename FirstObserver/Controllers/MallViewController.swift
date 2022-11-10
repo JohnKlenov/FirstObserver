@@ -14,6 +14,8 @@ class MallViewController: UIViewController {
     // MARK: - outlet property -
     @IBOutlet weak var mallCollectionView: UICollectionView!
     @IBOutlet weak var pageControl: UIPageControl!
+    @IBOutlet weak var brandStackView: UIStackView!
+    
     
     // MARK: - constraints from outlet -
     
@@ -23,11 +25,21 @@ class MallViewController: UIViewController {
     // MARK: - another property -
     
     var testModel:[UIImage] = []
+    var modelChild:[UIImage] = []
+    
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
         self.title = "GreenCity"
         testModel = (0..<4).map{UIImage(named: String($0))!}
+        (0...4).forEach({ _ in
+            self.modelChild.append(UIImage(named: "Icon")!)
+        })
+        
         mallCollectionView.delegate = self
         mallCollectionView.dataSource = self
 
@@ -35,6 +47,11 @@ class MallViewController: UIViewController {
         pageControl.currentPage = 0
         pageControl.pageIndicatorTintColor = .systemBrown
         pageControl.currentPageIndicatorTintColor = .black
+        
+        let childCVC = ChildCollectionViewController(arrayImage: modelChild)
+        childCVC.view.translatesAutoresizingMaskIntoConstraints = false
+        brandStackView.addArrangedSubview(childCVC.view)
+        addChild(childCVC)
         
     }
     

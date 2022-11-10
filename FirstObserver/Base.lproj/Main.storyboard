@@ -729,17 +729,32 @@
                                                 </cells>
                                             </collectionView>
                                             <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="EyR-6h-A3v">
-                                                <rect key="frame" x="157.66666666666666" y="274" width="112.99999999999997" height="25"/>
+                                                <rect key="frame" x="157.66666666666666" y="274" width="112.66666666666666" height="25"/>
                                                 <connections>
                                                     <action selector="changePageControl:" destination="Usr-4n-tDe" eventType="valueChanged" id="TXV-eg-zRm"/>
                                                 </connections>
                                             </pageControl>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="2Ga-WO-l9F">
+                                                <rect key="frame" x="0.0" y="330" width="428" height="20.333333333333314"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Recommendations" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1s1-8H-eNR">
+                                                        <rect key="frame" x="0.0" y="0.0" width="428" height="20.333333333333332"/>
+                                                        <color key="backgroundColor" red="0.50134080650000001" green="0.51620453600000005" blue="0.50623476509999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBrownColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="1500" id="RYG-N3-nlN"/>
+                                            <constraint firstItem="2Ga-WO-l9F" firstAttribute="top" secondItem="kzc-MQ-Mwm" secondAttribute="bottom" constant="30" id="TmX-9a-d2t"/>
                                             <constraint firstAttribute="trailing" secondItem="kzc-MQ-Mwm" secondAttribute="trailing" id="U4Q-1F-BOn"/>
+                                            <constraint firstAttribute="trailing" secondItem="2Ga-WO-l9F" secondAttribute="trailing" id="Vxe-5P-NJU"/>
                                             <constraint firstItem="EyR-6h-A3v" firstAttribute="top" secondItem="qE8-g3-Go0" secondAttribute="top" constant="274" id="WcJ-LC-hGR"/>
+                                            <constraint firstItem="2Ga-WO-l9F" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" id="Zl9-5a-6Ss"/>
                                             <constraint firstItem="EyR-6h-A3v" firstAttribute="centerX" secondItem="qE8-g3-Go0" secondAttribute="centerX" id="jrT-4R-jtz"/>
                                             <constraint firstItem="kzc-MQ-Mwm" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" id="m67-xI-gDe"/>
                                             <constraint firstItem="kzc-MQ-Mwm" firstAttribute="top" secondItem="qE8-g3-Go0" secondAttribute="top" id="wmr-Ko-AeK"/>
@@ -767,6 +782,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="brandStackView" destination="2Ga-WO-l9F" id="ro3-en-S5D"/>
                         <outlet property="heightCollectionView" destination="bMV-Hu-U0z" id="jRB-oi-XhX"/>
                         <outlet property="mallCollectionView" destination="kzc-MQ-Mwm" id="XXm-MI-wtD"/>
                         <outlet property="pageControl" destination="EyR-6h-A3v" id="dTe-TX-ACP"/>
