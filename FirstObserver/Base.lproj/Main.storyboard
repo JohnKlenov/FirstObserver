@@ -746,9 +746,46 @@
                                                     </label>
                                                 </subviews>
                                             </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="agV-P0-KTr">
+                                                <rect key="frame" x="20" y="380.33333333333331" width="388" height="108"/>
+                                                <subviews>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="reP-bf-QvL">
+                                                        <rect key="frame" x="0.0" y="0.0" width="388" height="50"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="50" id="yGs-U2-oYv"/>
+                                                        </constraints>
+                                                        <state key="normal" title="Button"/>
+                                                        <buttonConfiguration key="configuration" style="plain" title="Floor plan">
+                                                            <fontDescription key="titleFontDescription" type="system" pointSize="17"/>
+                                                            <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </buttonConfiguration>
+                                                        <connections>
+                                                            <action selector="didTapFloorPlan:" destination="Usr-4n-tDe" eventType="touchUpInside" id="2Ky-64-uFx"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ebg-TT-9ID">
+                                                        <rect key="frame" x="0.0" y="58" width="388" height="50"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="50" id="442-OX-WBk"/>
+                                                        </constraints>
+                                                        <state key="normal" title="Button"/>
+                                                        <buttonConfiguration key="configuration" style="plain" title="Website mall">
+                                                            <fontDescription key="titleFontDescription" type="system" pointSize="17"/>
+                                                            <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </buttonConfiguration>
+                                                        <connections>
+                                                            <action selector="didTapWebsite:" destination="Usr-4n-tDe" eventType="touchUpInside" id="4Iq-ld-Qs0"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                            </stackView>
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBrownColor"/>
                                         <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="agV-P0-KTr" secondAttribute="trailing" constant="20" id="JbU-lq-Mvp"/>
+                                            <constraint firstItem="agV-P0-KTr" firstAttribute="top" secondItem="2Ga-WO-l9F" secondAttribute="bottom" constant="30" id="RVC-Wa-TGZ"/>
                                             <constraint firstAttribute="height" constant="1500" id="RYG-N3-nlN"/>
                                             <constraint firstItem="2Ga-WO-l9F" firstAttribute="top" secondItem="kzc-MQ-Mwm" secondAttribute="bottom" constant="30" id="TmX-9a-d2t"/>
                                             <constraint firstAttribute="trailing" secondItem="kzc-MQ-Mwm" secondAttribute="trailing" id="U4Q-1F-BOn"/>
@@ -757,6 +794,7 @@
                                             <constraint firstItem="2Ga-WO-l9F" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" id="Zl9-5a-6Ss"/>
                                             <constraint firstItem="EyR-6h-A3v" firstAttribute="centerX" secondItem="qE8-g3-Go0" secondAttribute="centerX" id="jrT-4R-jtz"/>
                                             <constraint firstItem="kzc-MQ-Mwm" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" id="m67-xI-gDe"/>
+                                            <constraint firstItem="agV-P0-KTr" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" constant="20" id="mfT-r5-6In"/>
                                             <constraint firstItem="kzc-MQ-Mwm" firstAttribute="top" secondItem="qE8-g3-Go0" secondAttribute="top" id="wmr-Ko-AeK"/>
                                         </constraints>
                                     </view>

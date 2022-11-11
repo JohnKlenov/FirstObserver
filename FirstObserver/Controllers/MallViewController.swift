@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 
 class MallViewController: UIViewController {
 
@@ -61,6 +62,20 @@ class MallViewController: UIViewController {
     }
     
     
+
+    @IBAction func didTapFloorPlan(_ sender: Any) {
+    
+        self.showWebView("https://dana-mall.com/plan-trcz.html")
+        
+    }
+    
+    
+    @IBAction func didTapWebsite(_ sender: Any) {
+        
+        self.showWebView("https://dana-mall.com/")
+    }
+    
+    
     @IBAction func changePageControl(_ sender: UIPageControl) {
         
         mallCollectionView.scrollToItem(at: IndexPath(item: sender.currentPage, section: 0), at: .centeredHorizontally, animated: true)
@@ -91,6 +106,7 @@ class MallViewController: UIViewController {
     
 }
 
+
 extension MallViewController: UICollectionViewDelegateFlowLayout, UICollectionViewDelegate, UICollectionViewDataSource {
     
     
@@ -111,6 +127,15 @@ extension MallViewController: UICollectionViewDelegateFlowLayout, UICollectionVi
         return CGSize(width: widthCell, height: heightCell)
     }
     
-    
-    
+}
+
+extension UIViewController {
+    func showWebView(_ urlString: String) {
+       
+        guard let url = URL(string: urlString) else { return }
+        
+        let vc = SFSafariViewController(url: url)
+        vc.modalPresentationStyle = .fullScreen
+        self.present(vc, animated: true, completion: nil)
+    }
 }
