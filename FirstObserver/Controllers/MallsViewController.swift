@@ -15,6 +15,8 @@ class MallsViewController: UIViewController {
     var hightCellVC: CGFloat!
     let arrayTest = ["GreenCity", "DanaMall", "Castle", "Rock", "GalleryMinsk"]
     var modelC = [Model]()
+    var arrayPins: [PlacesTest] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -24,9 +26,28 @@ class MallsViewController: UIViewController {
         
         hightCellVC = (collectionView.frame.height/3)*0.86
         
+        getPins()
+        
+    }
+    
+    private func getPins() {
+        
+        guard let tabBarVCs = tabBarController?.viewControllers else {return}
+        
+        for vc in tabBarVCs {
+            print("контроллеров в таб баре")
+            
+            if let nc = vc as? UINavigationController {
+                if let homeVC = nc.topViewController as? HomeViewController {
+                    print("HomeViewController найден HomeViewController найден HomeViewController найден!")
+                    self.arrayPins = homeVC.arrayPin
+                }
+            }
+        }
     }
     
 }
+
 
 extension MallsViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
@@ -48,6 +69,7 @@ extension MallsViewController: UICollectionViewDataSource, UICollectionViewDeleg
         let mallVC = UIStoryboard.vcById("MallViewController") as? MallViewController
         
         if let mallVC = mallVC {
+            mallVC.arrayPin = self.arrayPins
             self.navigationController?.pushViewController(mallVC, animated: true)
         }
     }

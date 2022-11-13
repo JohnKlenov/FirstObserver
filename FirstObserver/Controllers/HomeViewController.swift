@@ -67,7 +67,7 @@ class HomeViewController: UIViewController {
     var arrayPin:[PlacesTest] = []
     var arrayPins:[PlacesFB] = [] {
         didSet {
-//            print("arrayPins didSet arrayPins didSet arrayPins didSet")
+            print("arrayPins didSet arrayPins didSet arrayPins didSet")
             getPlaces()
         }
     }

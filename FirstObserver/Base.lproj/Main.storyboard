@@ -687,7 +687,7 @@
                                 <rect key="frame" x="0.0" y="44" width="428" height="848"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qE8-g3-Go0">
-                                        <rect key="frame" x="0.0" y="0.0" width="428" height="1500"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="428" height="937.66666666666663"/>
                                         <subviews>
                                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" pagingEnabled="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="kzc-MQ-Mwm">
                                                 <rect key="frame" x="0.0" y="0.0" width="428" height="300"/>
@@ -735,19 +735,18 @@
                                                 </connections>
                                             </pageControl>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="2Ga-WO-l9F">
-                                                <rect key="frame" x="0.0" y="330" width="428" height="20.333333333333314"/>
+                                                <rect key="frame" x="0.0" y="370.33333333333331" width="428" height="0.0"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Recommendations" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1s1-8H-eNR">
-                                                        <rect key="frame" x="0.0" y="0.0" width="428" height="20.333333333333332"/>
-                                                        <color key="backgroundColor" red="0.50134080650000001" green="0.51620453600000005" blue="0.50623476509999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1s1-8H-eNR">
+                                                        <rect key="frame" x="0.0" y="0.0" width="428" height="0.0"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="1"/>
                                                         <nil key="textColor"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                 </subviews>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="agV-P0-KTr">
-                                                <rect key="frame" x="20" y="380.33333333333331" width="388" height="108"/>
+                                                <rect key="frame" x="20" y="390.33333333333331" width="388" height="108"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="reP-bf-QvL">
                                                         <rect key="frame" x="0.0" y="0.0" width="388" height="50"/>
@@ -781,21 +780,50 @@
                                                     </button>
                                                 </subviews>
                                             </stackView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Location Mall" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oYO-AC-3WB">
+                                                <rect key="frame" x="20" y="528.33333333333337" width="388" height="20.333333333333371"/>
+                                                <color key="backgroundColor" red="0.50134080650000001" green="0.51620453600000005" blue="0.50623476509999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Recommendations" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1wA-Zk-cd2">
+                                                <rect key="frame" x="20" y="330" width="388" height="20.333333333333314"/>
+                                                <color key="backgroundColor" red="0.50134080650000001" green="0.51620453600000005" blue="0.50623476509999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="3Vb-cc-r0N" customClass="CustomMapView" customModule="FirstObserver" customModuleProvider="target">
+                                                <rect key="frame" x="20" y="578.66666666666663" width="388" height="339"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="339" id="yq6-ql-aqX"/>
+                                                </constraints>
+                                            </mapView>
                                         </subviews>
                                         <color key="backgroundColor" systemColor="systemBrownColor"/>
                                         <constraints>
+                                            <constraint firstItem="3Vb-cc-r0N" firstAttribute="top" secondItem="oYO-AC-3WB" secondAttribute="bottom" constant="30" id="6vy-4X-IRf"/>
+                                            <constraint firstAttribute="trailing" secondItem="oYO-AC-3WB" secondAttribute="trailing" constant="20" id="Ac5-Jh-Ing"/>
+                                            <constraint firstItem="oYO-AC-3WB" firstAttribute="top" secondItem="agV-P0-KTr" secondAttribute="bottom" constant="30" id="CmD-mi-l9m"/>
+                                            <constraint firstAttribute="trailing" secondItem="1wA-Zk-cd2" secondAttribute="trailing" constant="20" id="Cpx-lU-d30"/>
+                                            <constraint firstAttribute="bottom" secondItem="3Vb-cc-r0N" secondAttribute="bottom" constant="20" id="HHn-DK-wMx"/>
+                                            <constraint firstItem="1wA-Zk-cd2" firstAttribute="top" secondItem="kzc-MQ-Mwm" secondAttribute="bottom" constant="30" id="JVH-zC-EWz"/>
                                             <constraint firstAttribute="trailing" secondItem="agV-P0-KTr" secondAttribute="trailing" constant="20" id="JbU-lq-Mvp"/>
-                                            <constraint firstItem="agV-P0-KTr" firstAttribute="top" secondItem="2Ga-WO-l9F" secondAttribute="bottom" constant="30" id="RVC-Wa-TGZ"/>
-                                            <constraint firstAttribute="height" constant="1500" id="RYG-N3-nlN"/>
-                                            <constraint firstItem="2Ga-WO-l9F" firstAttribute="top" secondItem="kzc-MQ-Mwm" secondAttribute="bottom" constant="30" id="TmX-9a-d2t"/>
+                                            <constraint firstItem="agV-P0-KTr" firstAttribute="top" secondItem="2Ga-WO-l9F" secondAttribute="bottom" constant="20" id="RVC-Wa-TGZ"/>
+                                            <constraint firstItem="2Ga-WO-l9F" firstAttribute="top" secondItem="1wA-Zk-cd2" secondAttribute="bottom" constant="20" id="SOW-Ea-tpL"/>
                                             <constraint firstAttribute="trailing" secondItem="kzc-MQ-Mwm" secondAttribute="trailing" id="U4Q-1F-BOn"/>
                                             <constraint firstAttribute="trailing" secondItem="2Ga-WO-l9F" secondAttribute="trailing" id="Vxe-5P-NJU"/>
                                             <constraint firstItem="EyR-6h-A3v" firstAttribute="top" secondItem="qE8-g3-Go0" secondAttribute="top" constant="274" id="WcJ-LC-hGR"/>
                                             <constraint firstItem="2Ga-WO-l9F" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" id="Zl9-5a-6Ss"/>
+                                            <constraint firstItem="3Vb-cc-r0N" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" constant="20" symbolic="YES" id="anW-pt-9sJ"/>
+                                            <constraint firstItem="oYO-AC-3WB" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" constant="20" id="fyE-Ra-kSL"/>
                                             <constraint firstItem="EyR-6h-A3v" firstAttribute="centerX" secondItem="qE8-g3-Go0" secondAttribute="centerX" id="jrT-4R-jtz"/>
                                             <constraint firstItem="kzc-MQ-Mwm" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" id="m67-xI-gDe"/>
                                             <constraint firstItem="agV-P0-KTr" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" constant="20" id="mfT-r5-6In"/>
+                                            <constraint firstAttribute="trailing" secondItem="3Vb-cc-r0N" secondAttribute="trailing" constant="20" symbolic="YES" id="nyh-gY-aUv"/>
                                             <constraint firstItem="kzc-MQ-Mwm" firstAttribute="top" secondItem="qE8-g3-Go0" secondAttribute="top" id="wmr-Ko-AeK"/>
+                                            <constraint firstItem="1wA-Zk-cd2" firstAttribute="leading" secondItem="qE8-g3-Go0" secondAttribute="leading" constant="20" id="xMw-5f-K1o"/>
                                         </constraints>
                                     </view>
                                 </subviews>
@@ -823,6 +851,7 @@
                         <outlet property="brandStackView" destination="2Ga-WO-l9F" id="ro3-en-S5D"/>
                         <outlet property="heightCollectionView" destination="bMV-Hu-U0z" id="jRB-oi-XhX"/>
                         <outlet property="mallCollectionView" destination="kzc-MQ-Mwm" id="XXm-MI-wtD"/>
+                        <outlet property="mapView" destination="3Vb-cc-r0N" id="qV7-VU-7pQ"/>
                         <outlet property="pageControl" destination="EyR-6h-A3v" id="dTe-TX-ACP"/>
                         <outlet property="topCnstrPageControl" destination="WcJ-LC-hGR" id="Nbb-wa-4ZK"/>
                     </connections>

@@ -64,7 +64,7 @@ class ProductViewController: UIViewController {
     var frameSizeSA:CGSize!
     var menu = Menu()
 //    let mallsArray = ["TH DanaMall", "TH GalleryMinsk", "TH Zamok", "TH DanaMall", "TH GalleryMinsk", "TH Zamok"]
-    let locationManager = CLLocationManager()
+//    let locationManager = CLLocationManager()
     
     let tapGestureRecognizer = UITapGestureRecognizer()
     
@@ -189,6 +189,7 @@ class ProductViewController: UIViewController {
     
     
     func colculateRegion() {
+        // 3.88 это 1% от т екущей ширины на storyboard
         let percentWidth = 100 - mapViewProduct.frame.size.width/3.88
         // если > 0 нужно не увеличивать а уменьшать newRegion
         guard percentWidth > 0 else { return }
