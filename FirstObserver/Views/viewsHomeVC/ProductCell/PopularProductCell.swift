@@ -14,7 +14,7 @@ class PopularProductCell: UITableViewCell {
     var model = [PopularProduct]()
     let countCell = 2
     let offset:CGFloat = 2.0
-    weak var delegate: NavigationHomeVCDelegate?
+    weak var delegate: ViewsHomeVCNavigationDelegate?
     
     override func awakeFromNib() {
         super.awakeFromNib()

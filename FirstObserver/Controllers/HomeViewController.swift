@@ -33,7 +33,7 @@ enum SwitchCaseNavigationHomeVC {
     case shopingMall
 }
 
-protocol NavigationHomeVCDelegate: AnyObject {
+protocol ViewsHomeVCNavigationDelegate: AnyObject {
     func  destinationVC(indexPath: Int, forCell: SwitchCaseNavigationHomeVC, refPath: String)
 }
 
@@ -387,7 +387,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
 //}
 //
 
-extension HomeViewController: NavigationHomeVCDelegate {
+extension HomeViewController: ViewsHomeVCNavigationDelegate {
     func  destinationVC(indexPath: Int, forCell: SwitchCaseNavigationHomeVC, refPath: String) {
         
         switch forCell {
@@ -413,6 +413,7 @@ extension HomeViewController: NavigationHomeVCDelegate {
             let brandVC = storyboard.instantiateViewController(withIdentifier: "BrandsViewController") as! BrandsViewController
             let ref = Database.database().reference(withPath: "brands/\(refPath)")
             brandVC.incomingRef = ref
+            brandVC.arrayPin = arrayPin
             self.navigationController?.pushViewController(brandVC, animated: true)
             
         case .shopingMall:

@@ -7,11 +7,16 @@
 
 import UIKit
 
+protocol ProductCellDelegtate: AnyObject {
+    func giveModel(model: PopularProduct)
+}
+
 class ProductCell: UICollectionViewCell {
 
     @IBOutlet weak var collectionView: UICollectionView!
     
     private var product = [PopularProduct]()
+    weak var delegate: ProductCellDelegtate?
    
     let countCell = 2
     let offset:CGFloat = 2.0
@@ -63,6 +68,12 @@ extension ProductCell: UICollectionViewDelegate, UICollectionViewDataSource, UIC
         let heightCell = collectionFrame.width/CGFloat(countCell)
         
         return CGSize(width: widthCell - 15, height: heightCell)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let product = product[indexPath.item]
+        delegate?.giveModel(model: product)
+        
     }
 
 }

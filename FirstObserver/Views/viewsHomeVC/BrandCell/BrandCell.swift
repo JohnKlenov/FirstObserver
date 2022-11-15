@@ -16,7 +16,7 @@ class BrandCell: UITableViewCell {
     @IBOutlet weak var collectionView: UICollectionView!
     
     var model = [PreviewCategory]()
-    weak var delegate: NavigationHomeVCDelegate?
+    weak var delegate: ViewsHomeVCNavigationDelegate?
 //    var delegate: HomeViewControllerDelegate?
     
     

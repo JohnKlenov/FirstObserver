@@ -8,6 +8,8 @@
 import UIKit
 import Firebase
 
+
+
 class BrandsViewController: UIViewController {
     
 //    var menu = Menu()
@@ -50,6 +52,7 @@ class BrandsViewController: UIViewController {
             print(popularGarderob?.groups.first?.name ?? "popularGarderob nil")
         }
     }
+    var arrayPin: [PlacesTest] = []
     
     
     
@@ -203,6 +206,7 @@ extension BrandsViewController : UICollectionViewDelegate, UICollectionViewDataS
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ProductCell", for: indexPath) as! ProductCell
+            cell.delegate = self
 //            let product = menu.groups.first?.groups?[indexPath.item].product
             let product = popularGarderob?.groups[indexPath.item].product
             cell.setupCell(product: product!)
@@ -248,6 +252,30 @@ extension BrandsViewController : UICollectionViewDelegate, UICollectionViewDataS
             groupsCollectionView.reloadData()
             self.collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
         }
+    }
+    
+    
+    
+}
+
+extension BrandsViewController: ProductCellDelegtate {
+    
+    func giveModel(model: PopularProduct) {
+        
+        let productVC = UIStoryboard.vcById("ProductViewController") as! ProductViewController
+        
+        var placesArray: [PlacesTest] = []
+        let malls = model.malls
+        
+        arrayPin.forEach { (places) in
+            if malls.contains(places.title ?? "") {
+                placesArray.append(places)
+            }
+        }
+        
+        productVC.arrayPin = placesArray
+        productVC.fireBaseModel = model
+        self.navigationController?.pushViewController(productVC, animated: true)
     }
     
     
