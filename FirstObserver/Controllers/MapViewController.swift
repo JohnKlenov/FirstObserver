@@ -14,6 +14,7 @@ class MapViewController: UIViewController {
     
     // Объект, который вы используете для мониторинга местоположения, в вашем приложении.
     let locationManager = CLLocationManager()
+    var arrayPin: [PlacesTest] = []
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         get {
@@ -32,12 +33,13 @@ class MapViewController: UIViewController {
         
         setupZoomLimit()
         
-        let greenMVC = Places(title: "ТЦ «Грин Сити»", locationName: "улица Притыцкого, 156/1", discipline: "Торговый центр", coordinate: CLLocationCoordinate2D(latitude: 53.908742, longitude: 27.434338), imageName: "GreenCity")
-        let galleriaMVC = Places(title: "ТЦ «Galleria Minsk»", locationName: "просп. Победителей, 9", discipline: "Торговый центр", coordinate: CLLocationCoordinate2D(latitude: 53.908423, longitude: 27.548857), imageName: "GalleriaMinsk")
+//        let greenMVC = Places(title: "ТЦ «Грин Сити»", locationName: "улица Притыцкого, 156/1", discipline: "Торговый центр", coordinate: CLLocationCoordinate2D(latitude: 53.908742, longitude: 27.434338), imageName: "GreenCity")
+//        let galleriaMVC = Places(title: "ТЦ «Galleria Minsk»", locationName: "просп. Победителей, 9", discipline: "Торговый центр", coordinate: CLLocationCoordinate2D(latitude: 53.908423, longitude: 27.548857), imageName: "GalleriaMinsk")
+//
+//        let danaMVC = Places(title: "ТЦ «Dana Mall»", locationName: "Минск, ул. Петра Мстиславца, 11", discipline: "Торговый центр", coordinate: CLLocationCoordinate2D(latitude: 53.933346, longitude: 27.650836), imageName: "DanaMall")
+//        mapView.addAnnotations([greenMVC, galleriaMVC, danaMVC])
         
-        let danaMVC = Places(title: "ТЦ «Dana Mall»", locationName: "Минск, ул. Петра Мстиславца, 11", discipline: "Торговый центр", coordinate: CLLocationCoordinate2D(latitude: 53.933346, longitude: 27.650836), imageName: "DanaMall")
-        mapView.addAnnotations([greenMVC, galleriaMVC, danaMVC])
-        
+        mapView.addAnnotations(arrayPin)
         
         
     }

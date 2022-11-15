@@ -287,7 +287,7 @@ class ProductViewController: UIViewController {
 
         if countFalse == mapViewProduct.annotations.count, isSelected == false {
             print("Переходим на VC")
-            performSegue(withIdentifier: "goToMapVC", sender: nil)
+            performSegue(withIdentifier: "goToMapVC", sender: arrayPin)
         }
     }
     
@@ -319,9 +319,10 @@ class ProductViewController: UIViewController {
     
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "goToContatctsMall", let string = sender as? String {
-           let destination = segue.destination as! ContaktMallViewController
-            destination.label.text = string
+        
+        if segue.identifier == "goToMapVC", let arrayPin = sender as? [PlacesTest] {
+            let destination = segue.destination as! MapViewController
+            destination.arrayPin = arrayPin
         }
     }
     
