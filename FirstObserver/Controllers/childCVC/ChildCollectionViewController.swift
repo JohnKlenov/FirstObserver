@@ -6,17 +6,18 @@
 //
 
 import UIKit
-
+import FirebaseStorage
+import FirebaseStorageUI
 
 
 class ChildCollectionViewController: UICollectionViewController {
     
-    var arrayImage:[UIImage] = []
+    var arrayBrands:[PreviewCategory] = []
     private static let reuseIdentifier = "Cell"
     var heightCnstrCollectionView: NSLayoutConstraint!
     
-    init(arrayImage: [UIImage]) {
-        self.arrayImage = arrayImage
+    init(arrayBrands: [PreviewCategory]) {
+        self.arrayBrands = arrayBrands
         let layout = UICollectionViewFlowLayout()
         super.init(collectionViewLayout: layout)
     }
@@ -41,18 +42,24 @@ class ChildCollectionViewController: UICollectionViewController {
         super.viewWillLayoutSubviews()
         heightCnstrCollectionView.constant = collectionViewLayout.collectionViewContentSize.height
     }
+    
+    func configureChildVC(arrayBrands: [PreviewCategory]) {
+        self.arrayBrands = arrayBrands
+        collectionView.reloadData()
+        
+    }
 
     // MARK: UICollectionViewDataSource
 
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of items
-        return arrayImage.count
+        return arrayBrands.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Self.reuseIdentifier, for: indexPath) as! BrandInMallCollectionViewCell
-        cell.setupCell(image: arrayImage[indexPath.item])
+        cell.setupCell(brand: arrayBrands[indexPath.item])
         return cell
     }
 
@@ -97,6 +104,8 @@ class BrandInMallCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     
+    var storage:Storage!
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.addSubview(imageViewBrand)
@@ -106,14 +115,17 @@ class BrandInMallCollectionViewCell: UICollectionViewCell {
         backgroundView = UIView(frame: .zero)
         backgroundView?.backgroundColor = .lightGray
         backgroundView?.layer.cornerRadius = 8
+        storage = Storage.storage()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func setupCell(image: UIImage) {
-        imageViewBrand.image = image
+    func setupCell(brand: PreviewCategory) {
+        let refStorage = storage.reference(forURL: brand.refImage)
+        imageViewBrand.sd_setImage(with: refStorage, placeholderImage: UIImage(named: "DefaultImage"))
+        
     }
     
 }

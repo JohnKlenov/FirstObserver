@@ -8,6 +8,7 @@
 import UIKit
 import SafariServices
 import MapKit
+import Firebase
 
 class MallViewController: UIViewController {
 
@@ -24,15 +25,35 @@ class MallViewController: UIViewController {
     @IBOutlet weak var topCnstrPageControl: NSLayoutConstraint!
     
     // MARK: another property
-    var testModel:[UIImage] = []
+    var modelImageForCV:[String] = [] {
+        didSet {
+            mallCollectionView.reloadData()
+        }
+    }
     var modelChild:[UIImage] = []
+    var floorPlan: String = ""
+    var webSite: String = ""
     
+    let childCVC = ChildCollectionViewController(arrayBrands: [PreviewCategory]())
     
     // MARK: MapView property
-    var arrayPin:[PlacesTest] = []
     var isSelected:Bool = false
     var tapGestureRecognizer = UITapGestureRecognizer()
     
+    
+    // MARK: FB property
+    var ref: DatabaseReference!
+    var refPath: String = ""
+    var arrayPin:[PlacesTest] = []
+    var brandsMall: [PreviewCategory] = []
+    var startMallModel:MallModel? {
+        didSet {
+            print("Сработал startMallModel")
+            if let model = startMallModel {
+                configureViews(mallModel: model)
+            }
+        }
+    }
     
     
     // MARK: -Life cycle methods -
@@ -40,11 +61,14 @@ class MallViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        mapView.arrayPin = arrayPin
+        ref = Database.database().reference()
+        
+        let currentPin = arrayPin.filter({$0.title == refPath})
+        mapView.arrayPin = currentPin
         mapView.delegateMallVC = self
         
-        self.title = "GreenCity"
-        testModel = (0..<4).map{UIImage(named: String($0))!}
+//        self.title = "GreenCity"
+//        testModel = (0..<4).map{UIImage(named: String($0))!}
         (0...4).forEach({ _ in
             self.modelChild.append(UIImage(named: "Icon")!)
         })
@@ -52,18 +76,71 @@ class MallViewController: UIViewController {
         mallCollectionView.delegate = self
         mallCollectionView.dataSource = self
 
-        pageControl.numberOfPages = testModel.count
+//        pageControl.numberOfPages = testModel.count
+//        pageControl.currentPage = 0
+//        pageControl.pageIndicatorTintColor = .systemBrown
+//        pageControl.currentPageIndicatorTintColor = .black
+        
+//        let childCVC = ChildCollectionViewController(arrayImage: modelChild)
+//        childCVC.view.translatesAutoresizingMaskIntoConstraints = false
+//        brandStackView.addArrangedSubview(childCVC.view)
+//        addChild(childCVC)
+//        let emptyBrands: [PreviewCategory] = []
+        
         pageControl.currentPage = 0
         pageControl.pageIndicatorTintColor = .systemBrown
         pageControl.currentPageIndicatorTintColor = .black
         
-        let childCVC = ChildCollectionViewController(arrayImage: modelChild)
         childCVC.view.translatesAutoresizingMaskIntoConstraints = false
         brandStackView.addArrangedSubview(childCVC.view)
         addChild(childCVC)
-        
         configureTapGestureRecognizer()
 
+    }
+    
+    
+    
+   
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+//        var arr
+        ref.child("Malls/\(refPath)").observe(.value) { (snapshot) in
+            
+            var arrayBrands:[String] = []
+            var arrayRefImage:[String] = []
+            
+            for item in snapshot.children {
+                let child = item as! DataSnapshot
+                
+                switch child.key {
+                
+                case "brands":
+                    for itemBrand in child.children {
+                        let brand = itemBrand as! DataSnapshot
+                        if let nameBrand = brand.value as? String {
+                            arrayBrands.append(nameBrand)
+                        }
+                    }
+                case "refImage":
+                    for itemRef in child.children {
+                        let ref = itemRef as! DataSnapshot
+                        if let refImage = ref.value as? String {
+                            arrayRefImage.append(refImage)
+                        }
+                    }
+                    
+                default:
+                    break
+                }
+                
+            }
+            print("Получили MallModel")
+            let mallModel = MallModel(snapshot: snapshot, refImage: arrayRefImage, brands: arrayBrands)
+            self.startMallModel = mallModel
+        }
+        
     }
     
     override func viewWillLayoutSubviews() {
@@ -76,13 +153,13 @@ class MallViewController: UIViewController {
 
     @IBAction func didTapFloorPlan(_ sender: Any) {
     
-        self.showWebView("https://dana-mall.com/plan-trcz.html")
+        self.showWebView(floorPlan)
         
     }
     
     @IBAction func didTapWebsite(_ sender: Any) {
         
-        self.showWebView("https://dana-mall.com/")
+        self.showWebView(webSite)
     }
     
     
@@ -137,6 +214,30 @@ class MallViewController: UIViewController {
     
     // MARK: - another methods -
     
+    
+    private func configureViews(mallModel:MallModel) {
+        
+        var modelBrands: [PreviewCategory] = []
+        brandsMall.forEach { (previewBrands) in
+            if mallModel.brands.contains(previewBrands.brand ?? "") {
+                modelBrands.append(previewBrands)
+                // setupChildVC(modelBrands)
+            }
+        }
+        print("modelBrands \(modelBrands)")
+        childCVC.configureChildVC(arrayBrands: modelBrands)
+        
+        
+        self.title = mallModel.name
+        modelImageForCV = mallModel.refImage
+        floorPlan = mallModel.floorPlan
+        webSite = mallModel.webSite
+        
+        pageControl.numberOfPages = mallModel.refImage.count
+        
+    }
+    
+    
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let currentPage = Int(scrollView.contentOffset.x) / Int(scrollView.frame.width)
         pageControl.currentPage = currentPage
@@ -169,12 +270,12 @@ extension MallViewController: UICollectionViewDelegateFlowLayout, UICollectionVi
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return testModel.count
+        return modelImageForCV.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ImageMallCollectionViewCell", for: indexPath) as! ImageMallCollectionViewCell
-        cell.configure(mallImage: testModel[indexPath.item])
+        cell.configure(mallImageRef: modelImageForCV[indexPath.item])
         return cell
     }
     

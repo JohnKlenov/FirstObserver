@@ -14,6 +14,7 @@ class ShopingMallCell: UITableViewCell {
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     
     var model = [PreviewCategory]()
+    weak var delegate: ViewsHomeVCNavigationDelegate?
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -71,6 +72,11 @@ extension ShopingMallCell: UICollectionViewDelegate, UICollectionViewDataSource,
         return CGSize(width: widthCell, height: heightCell)
     }
     
-    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        if let mall = model[indexPath.item].brand {
+            delegate?.destinationVC(indexPath: indexPath.item, forCell: .shopingMall, refPath: mall)
+        }
+    }
     
 }

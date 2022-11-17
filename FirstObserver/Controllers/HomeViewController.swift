@@ -58,7 +58,7 @@ class HomeViewController: UIViewController {
     var arrayInArray = [String:Any]() {
         didSet {
             if arrayInArray.count == 3 {
-//                print("arrayInArray arrayInArray arrayInArray")
+                print("arrayInArray arrayInArray arrayInArray\(arrayInArray.count)")
                 self.homeTableView.reloadData()
             }
         }
@@ -331,6 +331,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
             let shopingCell = tableView.dequeueReusableCell(withIdentifier: "ShopingMall") as! ShopingMallCell
             let malls = arrayInArray["malls"] as! [PreviewCategory]
             
+            shopingCell.delegate = self
             shopingCell.configureCell(arrayMalls: malls)
             
             shopingCell.backgroundColor = .black
@@ -388,6 +389,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
 //
 
 extension HomeViewController: ViewsHomeVCNavigationDelegate {
+   
     func  destinationVC(indexPath: Int, forCell: SwitchCaseNavigationHomeVC, refPath: String) {
         
         switch forCell {
@@ -417,7 +419,12 @@ extension HomeViewController: ViewsHomeVCNavigationDelegate {
             self.navigationController?.pushViewController(brandVC, animated: true)
             
         case .shopingMall:
-            break
+            
+            let mallVC = UIStoryboard.vcById("MallViewController") as! MallViewController
+            mallVC.refPath = refPath
+            mallVC.arrayPin = arrayPin
+            mallVC.brandsMall = arrayInArray["brands"] as! [PreviewCategory]
+            self.navigationController?.pushViewController(mallVC, animated: true)
         }
 
     }
