@@ -849,11 +849,13 @@
                     </view>
                     <connections>
                         <outlet property="brandStackView" destination="2Ga-WO-l9F" id="ro3-en-S5D"/>
+                        <outlet property="floorPlanButton" destination="reP-bf-QvL" id="DU0-Ux-kPm"/>
                         <outlet property="heightCollectionView" destination="bMV-Hu-U0z" id="jRB-oi-XhX"/>
                         <outlet property="mallCollectionView" destination="kzc-MQ-Mwm" id="XXm-MI-wtD"/>
                         <outlet property="mapView" destination="3Vb-cc-r0N" id="qV7-VU-7pQ"/>
                         <outlet property="pageControl" destination="EyR-6h-A3v" id="dTe-TX-ACP"/>
                         <outlet property="topCnstrPageControl" destination="WcJ-LC-hGR" id="Nbb-wa-4ZK"/>
+                        <outlet property="webSiteButton" destination="ebg-TT-9ID" id="SNN-Qo-frI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="yBp-lD-ZL3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

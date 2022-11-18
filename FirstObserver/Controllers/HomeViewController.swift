@@ -45,7 +45,6 @@ class HomeViewController: UIViewController {
     lazy var topView = UIView()
     static let userDefaults = UserDefaults.standard
     
-    
     var homeModel = [HomeModel]()
     
    

@@ -19,7 +19,9 @@ class MallViewController: UIViewController {
     @IBOutlet weak var pageControl: UIPageControl!
     @IBOutlet weak var brandStackView: UIStackView!
     @IBOutlet weak var mapView: CustomMapView!
-    
+    @IBOutlet weak var floorPlanButton: UIButton!
+    @IBOutlet weak var webSiteButton: UIButton!
+   
     // MARK: constraints from outlet
     @IBOutlet weak var heightCollectionView: NSLayoutConstraint!
     @IBOutlet weak var topCnstrPageControl: NSLayoutConstraint!
@@ -67,25 +69,8 @@ class MallViewController: UIViewController {
         mapView.arrayPin = currentPin
         mapView.delegateMallVC = self
         
-//        self.title = "GreenCity"
-//        testModel = (0..<4).map{UIImage(named: String($0))!}
-        (0...4).forEach({ _ in
-            self.modelChild.append(UIImage(named: "Icon")!)
-        })
-        
         mallCollectionView.delegate = self
         mallCollectionView.dataSource = self
-
-//        pageControl.numberOfPages = testModel.count
-//        pageControl.currentPage = 0
-//        pageControl.pageIndicatorTintColor = .systemBrown
-//        pageControl.currentPageIndicatorTintColor = .black
-        
-//        let childCVC = ChildCollectionViewController(arrayImage: modelChild)
-//        childCVC.view.translatesAutoresizingMaskIntoConstraints = false
-//        brandStackView.addArrangedSubview(childCVC.view)
-//        addChild(childCVC)
-//        let emptyBrands: [PreviewCategory] = []
         
         pageControl.currentPage = 0
         pageControl.pageIndicatorTintColor = .systemBrown
@@ -105,7 +90,6 @@ class MallViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-//        var arr
         ref.child("Malls/\(refPath)").observe(.value) { (snapshot) in
             
             var arrayBrands:[String] = []
@@ -230,8 +214,18 @@ class MallViewController: UIViewController {
         
         self.title = mallModel.name
         modelImageForCV = mallModel.refImage
-        floorPlan = mallModel.floorPlan
-        webSite = mallModel.webSite
+        
+        if let plan = mallModel.floorPlan {
+            floorPlan = plan
+        } else {
+            floorPlanButton.isHidden = true
+        }
+        
+        if let web = mallModel.webSite {
+            webSite = web
+        } else {
+            webSiteButton.isHidden = true
+        }
         
         pageControl.numberOfPages = mallModel.refImage.count
         
