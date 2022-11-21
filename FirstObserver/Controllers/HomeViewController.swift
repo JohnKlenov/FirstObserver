@@ -47,6 +47,23 @@ class HomeViewController: UIViewController {
     
     var homeModel = [HomeModel]()
     
+    private var loader: UIActivityIndicatorView = {
+        let loader = UIActivityIndicatorView()
+        loader.color = .black
+        loader.isHidden = true
+        loader.hidesWhenStopped = true
+        loader.frame = CGRect(x: 0, y: 0, width: 50, height: 50)
+        return loader
+    }()
+    
+    private var activityContainerView: UIView = {
+        let view = UIView()
+        view.frame = CGRect(x: 0, y: 0, width: 100, height: 100)
+        view.backgroundColor = UIColor(red: 170/255, green: 170/255, blue: 170/255, alpha: 1)
+        view.layer.cornerRadius = 8
+        return view
+    }()
+    
    
     
     var ref: DatabaseReference!
@@ -59,6 +76,8 @@ class HomeViewController: UIViewController {
             if arrayInArray.count == 3 {
                 print("arrayInArray arrayInArray arrayInArray\(arrayInArray.count)")
                 self.homeTableView.reloadData()
+                loader.stopAnimating()
+                activityContainerView.removeFromSuperview()
             }
         }
     }
@@ -74,6 +93,13 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        activityContainerView.addSubview(loader)
+        loader.center = activityContainerView.center
+        self.view.addSubview(activityContainerView)
+        loader.isHidden = false
+        activityContainerView.center = self.view.center
+        loader.startAnimating()
+       
         storage = Storage.storage()
         ref = Database.database().reference()
 
@@ -432,6 +458,6 @@ extension HomeViewController: ViewsHomeVCNavigationDelegate {
 }
 
 
-    
+
     
 
