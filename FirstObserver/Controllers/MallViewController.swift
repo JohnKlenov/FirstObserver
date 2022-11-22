@@ -10,6 +10,12 @@ import SafariServices
 import MapKit
 import Firebase
 
+
+protocol ChildVCDelegate: AnyObject {
+    
+    func goToBrandVC(pathRef: String)
+}
+
 class MallViewController: UIViewController {
 
     
@@ -78,6 +84,7 @@ class MallViewController: UIViewController {
         
         childCVC.view.translatesAutoresizingMaskIntoConstraints = false
         brandStackView.addArrangedSubview(childCVC.view)
+        childCVC.delegate = self
         addChild(childCVC)
         configureTapGestureRecognizer()
 
@@ -306,4 +313,22 @@ extension MallViewController: MapViewManagerDelegate {
     
 }
 
+
+// MARK: - Navigation ChildVCDelegate  -
+
+extension MallViewController: ChildVCDelegate {
+    
+    func goToBrandVC(pathRef: String) {
+        
+        let ref = Database.database().reference(withPath: "brands/\(pathRef)")
+        let brandVC = UIStoryboard.vcById("BrandsViewController") as! BrandsViewController
+        brandVC.incomingRef = ref
+        brandVC.arrayPin = arrayPin
+        self.navigationController?.pushViewController(brandVC, animated: true)
+        
+    }
+    
+    
+    
+}
 

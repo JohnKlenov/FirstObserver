@@ -15,6 +15,7 @@ class ChildCollectionViewController: UICollectionViewController {
     var arrayBrands:[PreviewCategory] = []
     private static let reuseIdentifier = "Cell"
     var heightCnstrCollectionView: NSLayoutConstraint!
+    weak var delegate: ChildVCDelegate?
     
     init(arrayBrands: [PreviewCategory]) {
         self.arrayBrands = arrayBrands
@@ -63,12 +64,17 @@ class ChildCollectionViewController: UICollectionViewController {
         return cell
     }
 
-    // MARK: UICollectionViewDelegateFlowLayout
+   
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let category = arrayBrands[indexPath.item]
+        delegate?.goToBrandVC(pathRef: category.brand ?? "")
+    }
 
    
 
 }
 
+// MARK: UICollectionViewDelegateFlowLayout
 
 extension ChildCollectionViewController: UICollectionViewDelegateFlowLayout {
     
