@@ -13,9 +13,10 @@ class MallsViewController: UIViewController {
     @IBOutlet weak var collectionView: UICollectionView!
     
     var hightCellVC: CGFloat!
-    let arrayTest = ["GreenCity", "DanaMall", "Castle", "Rock", "GalleryMinsk"]
-    var modelC = [Model]()
+
     var arrayPins: [PlacesTest] = []
+    var mallsModel: [PreviewCategory] = []
+    var brandsModel: [PreviewCategory] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,11 +27,11 @@ class MallsViewController: UIViewController {
         
         hightCellVC = (collectionView.frame.height/3)*0.86
         
-        getPins()
+        getFetchDataHVC()
         
     }
     
-    private func getPins() {
+    private func getFetchDataHVC() {
         
         guard let tabBarVCs = tabBarController?.viewControllers else {return}
         
@@ -41,6 +42,12 @@ class MallsViewController: UIViewController {
                 if let homeVC = nc.topViewController as? HomeViewController {
                     print("HomeViewController найден HomeViewController найден HomeViewController найден!")
                     self.arrayPins = homeVC.arrayPin
+                    if let model = homeVC.arrayInArray["malls"] as? [PreviewCategory] {
+                        self.mallsModel = model
+                    }
+                    if let brands = homeVC.arrayInArray["brands"] as? [PreviewCategory] {
+                        self.brandsModel = brands
+                    }
                 }
             }
         }
@@ -52,12 +59,12 @@ class MallsViewController: UIViewController {
 extension MallsViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return arrayTest.count
+        return mallsModel.count
     }
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MallCollectionViewCell", for: indexPath) as! MallCollectionViewCell
-        cell.configureCell(model: arrayTest[indexPath.item])
+        cell.configureCell(model: mallsModel[indexPath.item], currentFrame: CGSize(width: collectionView.frame.width - 20, height: hightCellVC))
         return cell
     }
     
@@ -65,14 +72,14 @@ extension MallsViewController: UICollectionViewDataSource, UICollectionViewDeleg
         return CGSize(width: collectionView.frame.width - 20, height: hightCellVC)
     }
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let mallVC = UIStoryboard.vcById("MallViewController") as? MallViewController
-        
-        if let mallVC = mallVC {
-            mallVC.arrayPin = self.arrayPins
-            self.navigationController?.pushViewController(mallVC, animated: true)
-        }
-    }
+//    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+//        let mallVC = UIStoryboard.vcById("MallViewController") as? MallViewController
+//
+//        if let mallVC = mallVC {
+//            mallVC.arrayPin = self.arrayPins
+//            self.navigationController?.pushViewController(mallVC, animated: true)
+//        }
+//    }
    
 }
 
