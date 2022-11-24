@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Firebase
 
 class CatalogViewController: UIViewController {
     
@@ -14,16 +15,17 @@ class CatalogViewController: UIViewController {
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var segmentControl: UISegmentedControl!
     
-    var modelC = [Model]()
     var heightCellCV:CGFloat!
+    var ref: DatabaseReference!
+    var arrayCatalog: [PreviewCategory] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        ref = Database.database().reference()
         self.title = "Catalog"
         collectionView.delegate = self
         collectionView.dataSource = self
-        setupModel()
         
         heightCellCV = (collectionView.frame.height/3)*0.86
         print(" collectionView.frame.height - \(collectionView.frame.height)")
@@ -31,26 +33,33 @@ class CatalogViewController: UIViewController {
        
     }
     
-    func setupModel() {
-        for _ in 0...5 {
-            let model = Model(image: UIImage(named: "Icon")!)
-            modelC.append(model)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        ref.child("catalog").observe(.value) { [weak self] (snapshot) in
+            var arrayCatalog = [PreviewCategory]()
+            for item in snapshot.children {
+                let category = item as! DataSnapshot
+                let model = PreviewCategory(snapshot: category)
+                arrayCatalog.append(model)
+            }
+            self?.arrayCatalog = arrayCatalog
+            self?.collectionView.reloadData()
         }
     }
-    
 }
 
 
 extension CatalogViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return modelC.count
+        return arrayCatalog.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CatalogCollectionViewCell", for: indexPath) as! CatalogCollectionViewCell
-        cell.setupCell(image: modelC[indexPath.item].image!)
+        cell.setupCell(model: arrayCatalog[indexPath.item], currentFrame: CGSize(width: collectionView.frame.width - 20, height: heightCellCV))
         
         return cell
     }
@@ -62,7 +71,7 @@ extension CatalogViewController: UICollectionViewDelegate, UICollectionViewDataS
     
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "goToAllProductVC", sender: nil)
+//        performSegue(withIdentifier: "goToAllProductVC", sender: nil)
     }
     
 }
