@@ -72,14 +72,18 @@ extension MallsViewController: UICollectionViewDataSource, UICollectionViewDeleg
         return CGSize(width: collectionView.frame.width - 20, height: hightCellVC)
     }
     
-//    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        let mallVC = UIStoryboard.vcById("MallViewController") as? MallViewController
-//
-//        if let mallVC = mallVC {
-//            mallVC.arrayPin = self.arrayPins
-//            self.navigationController?.pushViewController(mallVC, animated: true)
-//        }
-//    }
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let mallVC = UIStoryboard.vcById("MallViewController") as? MallViewController
+
+        if let mallVC = mallVC {
+            mallVC.arrayPin = self.arrayPins
+            mallVC.brandsMall = self.brandsModel
+            if let refPath = mallsModel[indexPath.item].brand {
+                mallVC.refPath = refPath
+            }
+            self.navigationController?.pushViewController(mallVC, animated: true)
+        }
+    }
    
 }
 

@@ -78,6 +78,7 @@ class HomeViewController: UIViewController {
                 self.homeTableView.reloadData()
                 loader.stopAnimating()
                 activityContainerView.removeFromSuperview()
+                self.tabBarController?.view.isUserInteractionEnabled = true
             }
         }
     }
@@ -93,6 +94,7 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.tabBarController?.view.isUserInteractionEnabled = false
         activityContainerView.addSubview(loader)
         loader.center = activityContainerView.center
         self.view.addSubview(activityContainerView)
