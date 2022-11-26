@@ -12,17 +12,8 @@ import Firebase
 
 class BrandsViewController: UIViewController {
     
-//    var menu = Menu()
+
     var heightCollectionView:CGFloat!
-    
-//    var selectedGroup:Group? {
-//        didSet {
-//            if let selectedGroup = self.selectedGroup {
-//                self.title = selectedGroup.name
-//            }
-//        }
-//    }
-    
     var selectedGroup:PopularGroup? {
         didSet {
             if let selectedGroup = self.selectedGroup {
@@ -40,6 +31,8 @@ class BrandsViewController: UIViewController {
     // MARK: - FirebaseProperty -
     
     var incomingRef: DatabaseReference?
+    var searchCategory: String?
+    var categoryRef: DatabaseReference?
     var popularGarderob: PopularGarderob? {
         didSet {
             if let group = popularGarderob?.groups.first, let groups = popularGarderob?.groups, groups.count > 0 {
@@ -81,13 +74,13 @@ class BrandsViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+        print("BrandsViewController BrandsViewController BrandsViewController")
         incomingRef?.observe(.value){ (snapshot) in
             
             let garderob = PopularGarderob()
             for item in snapshot.children {
                 let itemCategory = item as! DataSnapshot
-                print(itemCategory.key)
+                print("BrandsViewController \(itemCategory.key)")
                 let group = PopularGroup(name: itemCategory.key, group: nil, product: [])
                 for item in itemCategory.children {
                     let product = item as! DataSnapshot
@@ -123,11 +116,11 @@ class BrandsViewController: UIViewController {
                     }
                     let productModel = PopularProduct(snapshot: product, refArray: arrayRefe, malls: arrayMalls)
                     group.product?.append(productModel)
-                    print("Append new product \(productModel.model)")
+                    print("Append new product BrandsViewController\(productModel.model)")
                     
                 }
                 garderob.groups.append(group)
-                print("appenf new group \(group.name)")
+                print("appenf new group BrandsViewController\(group.name)")
             }
             self.popularGarderob = garderob
         }

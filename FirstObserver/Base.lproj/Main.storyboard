@@ -169,7 +169,6 @@
                     <connections>
                         <outlet property="collectionView" destination="1NM-Pb-ffF" id="9Un-ht-LHw"/>
                         <outlet property="segmentControl" destination="lm1-em-isz" id="ibR-HN-gYU"/>
-                        <segue destination="WxL-uP-wAl" kind="show" identifier="goToAllProductVC" id="cTE-PC-OKJ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="atm-0a-HvP" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -179,13 +178,13 @@
         <!--All Product View Controller-->
         <scene sceneID="ttS-Gc-hEE">
             <objects>
-                <viewController id="WxL-uP-wAl" customClass="AllProductViewController" customModule="FirstObserver" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AllProductViewController" id="WxL-uP-wAl" customClass="AllProductViewController" customModule="FirstObserver" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="1Wh-bF-BG6">
                         <rect key="frame" x="0.0" y="0.0" width="428" height="926"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="RZj-Yr-AVa">
-                                <rect key="frame" x="0.0" y="88" width="428" height="60"/>
+                                <rect key="frame" x="0.0" y="44" width="428" height="60"/>
                                 <color key="backgroundColor" red="0.99769028390000003" green="0.75547939850000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="60" id="J9u-D0-Ylh"/>
@@ -199,7 +198,7 @@
                                 <cells/>
                             </collectionView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" pagingEnabled="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="a08-GQ-dWH">
-                                <rect key="frame" x="0.0" y="148" width="428" height="695"/>
+                                <rect key="frame" x="0.0" y="104" width="428" height="788"/>
                                 <color key="backgroundColor" red="1" green="0.68483741210000004" blue="0.44589307179999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="2fz-EG-gnt">
                                     <size key="itemSize" width="128" height="128"/>

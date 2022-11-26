@@ -18,6 +18,7 @@ class CatalogViewController: UIViewController {
     var heightCellCV:CGFloat!
     var ref: DatabaseReference!
     var arrayCatalog: [PreviewCategory] = []
+    var arrayPins: [PlacesTest] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,7 +31,7 @@ class CatalogViewController: UIViewController {
         heightCellCV = (collectionView.frame.height/3)*0.86
         print(" collectionView.frame.height - \(collectionView.frame.height)")
         print(" heightCellCV - \(String(describing: heightCellCV))")
-       
+        getFetchDataHVC()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -45,6 +46,23 @@ class CatalogViewController: UIViewController {
             }
             self?.arrayCatalog = arrayCatalog
             self?.collectionView.reloadData()
+        }
+    }
+    
+    private func getFetchDataHVC() {
+        
+        guard let tabBarVCs = tabBarController?.viewControllers else {return}
+        
+        for vc in tabBarVCs {
+            print("контроллеров в таб баре")
+            
+            if let nc = vc as? UINavigationController {
+                if let homeVC = nc.topViewController as? HomeViewController {
+                    print("HomeViewController найден HomeViewController найден HomeViewController найден!")
+                    self.arrayPins = homeVC.arrayPin
+
+                }
+            }
         }
     }
 }
@@ -71,7 +89,13 @@ extension CatalogViewController: UICollectionViewDelegate, UICollectionViewDataS
     
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        performSegue(withIdentifier: "goToAllProductVC", sender: nil)
+        let searchCategory = arrayCatalog[indexPath.item].brand
+        let allProductCategoryVC = UIStoryboard.vcById("AllProductViewController") as! AllProductViewController
+        allProductCategoryVC.searchCategory = searchCategory
+        let refCategory = Database.database().reference(withPath: "brands")
+        allProductCategoryVC.categoryRef = refCategory
+        allProductCategoryVC.arrayPin = arrayPins
+        self.navigationController?.pushViewController(allProductCategoryVC, animated: true)
     }
     
 }
