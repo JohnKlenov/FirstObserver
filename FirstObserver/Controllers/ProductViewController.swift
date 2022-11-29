@@ -63,27 +63,36 @@ class ProductViewController: UIViewController {
     var onePercenteSAH: CGFloat!
     var frameSizeSA:CGSize!
     var menu = Menu()
-//    let mallsArray = ["TH DanaMall", "TH GalleryMinsk", "TH Zamok", "TH DanaMall", "TH GalleryMinsk", "TH Zamok"]
-//    let locationManager = CLLocationManager()
-    
     let tapGestureRecognizer = UITapGestureRecognizer()
-    
-    var isSelected:Bool = false
+    var isSelectedAnnotation:Bool = false
     
     
     
     // MARK: - NewModel -
     
-    
     var fireBaseModel:PopularProduct?
-//    var ref:DatabaseReference!
-//    var arrayPlaces:[PlacesFB] = []
     var arrayPin:[PlacesTest] = []
-//    var arrayPin:[Places] = []
     var storage:Storage!
+    var isAddedToCard: Bool = false
+    
+    
+    
+    // MARK: -AddedProduct for Realtime database -
+    
+    private lazy var ref: DatabaseReference? = {
+        guard let uid = Auth.auth().currentUser?.uid else { return nil }
+        
+        let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
+        return ref
+    }()
+    
+    private let encoder = JSONEncoder()
     
     
     @IBAction func didTapAddToCart(_ sender: Any) {
+        
+        // save product in realtime database
+        saveProductFB()
         
         let bool = UserDefaults.standard.bool(forKey: "WarningKey")
         // условие должно быть !bool
@@ -103,16 +112,31 @@ class ProductViewController: UIViewController {
         }
     }
     
+    private func saveProductFB() {
+        
+        guard let product = fireBaseModel, let ref = ref else { return }
+        
+        let productEncode = AddedProduct(product: product)
+        
+        do {
+            let data = try encoder.encode(productEncode)
+            let json = try JSONSerialization.jsonObject(with: data)
+            ref.updateChildValues([product.model:json])
+        } catch {
+            print("an error occured", error)
+        }
+        
+        
+    }
     
    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        configureButton()
+        
         storage = Storage.storage()
-//        ref = Database.database().reference(withPath: "Places")
-//        print("viewDidLoad - mapViewProduct.frame.size - \(mapViewProduct.frame.size)")
-        
-        
+
         // configure outlet
         addToCartButton.setImage(UIImage(systemName: "cart"), for: .normal)
         addToCartButton.semanticContentAttribute = .forceRightToLeft
@@ -121,18 +145,15 @@ class ProductViewController: UIViewController {
         price.text = fireBaseModel?.price
         descriptionText.text = fireBaseModel?.description
         
-        
         self.view.bringSubviewToFront(self.view)
         
-//        productPageControl.numberOfPages = menu.groups[0].groups?[1].product?.count ?? 0
         productPageControl.numberOfPages = fireBaseModel?.refArray.count ?? 1
         productPageControl.currentPage = 0
         productPageControl.pageIndicatorTintColor = .systemBrown
         productPageControl.currentPageIndicatorTintColor = .black
         
         self.tabBarController?.tabBar.isHidden = true
-//        textLabel.text = text
-        
+
         productCollectionView.delegate = self
         productCollectionView.dataSource = self
         
@@ -148,6 +169,12 @@ class ProductViewController: UIViewController {
         
     }
     
+    private func configureButton() {
+        if isAddedToCard {
+            addToCartButton.isUserInteractionEnabled = false
+            addToCartButton.alpha = 0.8
+        }
+    }
     
     private func updateButton(button:UIButton) {
         button.setTitle("added to cart", for: .normal)
@@ -285,7 +312,7 @@ class ProductViewController: UIViewController {
             
         }
 
-        if countFalse == mapViewProduct.annotations.count, isSelected == false {
+        if countFalse == mapViewProduct.annotations.count, isSelectedAnnotation == false {
             print("Переходим на VC")
             performSegue(withIdentifier: "goToMapVC", sender: arrayPin)
         }
@@ -527,12 +554,12 @@ extension ProductViewController: MKMapViewDelegate {
     
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        isSelected = true
+        isSelectedAnnotation = true
         print("сработал didSelect MKAnnotationView")
     }
 
     func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
-        isSelected = false
+        isSelectedAnnotation = false
         print("didDeselect MKAnnotationView")
     }
 

@@ -83,6 +83,12 @@ class HomeViewController: UIViewController {
         }
     }
     
+    var addedToCardProducts:[PopularProduct] = [] {
+        didSet {
+            print("addedToCardProducts \(self.addedToCardProducts)")
+        }
+    }
+    
     var arrayPin:[PlacesTest] = []
     var arrayPins:[PlacesFB] = [] {
         didSet {
@@ -104,18 +110,20 @@ class HomeViewController: UIViewController {
        
         storage = Storage.storage()
         ref = Database.database().reference()
-
-        
+       
         if Auth.auth().currentUser == nil {
-            
-            let refFBR = Database.database().reference().child("usersAccaunt")
+            print("Auth.auth().currentUser == nil  Auth.auth().currentUser == nil  Auth.auth().currentUser == nil ")
+//            let refFBR = Database.database().reference().child("usersAccaunt")
+            let refFBR = Database.database().reference()
             Auth.auth().signInAnonymously { (authResult, error) in
                 guard let user = authResult?.user else {return}
                 let uid = user.uid
-                refFBR.child(uid)
-                refFBR.setValue(["uid":user.uid])
+                refFBR.child("usersAccaunt/\(uid)").setValue(["uid":user.uid])
+//                refFBR.setValue(["uid":user.uid])
             }
         } else {
+            
+            print("Auth.auth().currentUser?.uid - \(String(describing: Auth.auth().currentUser?.uid))")
             print("user no null!")
         }
         
@@ -210,6 +218,58 @@ class HomeViewController: UIViewController {
                 
             }
             self?.arrayPins = arrayPin
+        }
+        
+        
+        let userId = Auth.auth().currentUser?.uid
+        print("userId - \(String(describing: userId))")
+        ref.child("usersAccaunt/\(userId ?? "")").observe(.value) { [weak self] (snapshot) in
+            for item in snapshot.children {
+                let item = item as! DataSnapshot
+                print("item - \(item.key)")
+                switch item.key {
+                case "AddedProducts":
+                    var arrayProduct = [PopularProduct]()
+                    
+                    for item in item.children {
+                        let product = item as! DataSnapshot
+                        
+                        var arrayMalls = [String]()
+                        var arrayRefe = [String]()
+                        
+                        
+                        for mass in product.children {
+                            let item = mass as! DataSnapshot
+                            
+                            switch item.key {
+                            case "malls":
+                                for it in item.children {
+                                    let item = it as! DataSnapshot
+                                    if let refDictionary = item.value as? String {
+                                        arrayMalls.append(refDictionary)
+                                    }
+                                }
+                                
+                            case "refImage":
+                                for it in item.children {
+                                    let item = it as! DataSnapshot
+                                    if let refDictionary = item.value as? String {
+                                        arrayRefe.append(refDictionary)
+                                    }
+                                }
+                            default:
+                                break
+                            }
+                            
+                        }
+                        let productModel = PopularProduct(snapshot: product, refArray: arrayRefe, malls: arrayMalls)
+                        arrayProduct.append(productModel)
+                    }
+                    self?.addedToCardProducts = arrayProduct
+                default:
+                    break
+                }
+            }
         }
         removeTopView()
     }
@@ -433,6 +493,12 @@ extension HomeViewController: ViewsHomeVCNavigationDelegate {
                     placesArray.append(places)
                 }
             }
+            addedToCardProducts.forEach { (addedProduct) in
+                if addedProduct.model == product[indexPath].model {
+                    productVC.isAddedToCard = true
+                }
+            }
+            
             productVC.fireBaseModel = product[indexPath]
             productVC.arrayPin = placesArray
             self.navigationController?.pushViewController(productVC, animated: true)

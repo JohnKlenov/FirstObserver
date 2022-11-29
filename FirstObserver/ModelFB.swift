@@ -126,6 +126,22 @@ class MallModel {
     }
 }
 
+class AddedProduct: Encodable {
+    
+    let model: String
+    let description: String
+    let price: String
+    let refArray: [String]
+    let malls: [String]
+    
+    init(product: PopularProduct) {
+        self.model = product.model
+        self.description = product.description
+        self.price = product.price
+        self.refArray = product.refArray
+        self.malls = product.malls
+    }
+}
 
 class PopularProduct {
     
