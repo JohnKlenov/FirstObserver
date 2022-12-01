@@ -46,11 +46,17 @@ class BrandsViewController: UIViewController {
         }
     }
     var arrayPin: [PlacesTest] = []
-    
+    var addedToCartProducts: [PopularProduct] = [] {
+        didSet {
+            print("#######################################################")
+            print("\(self.addedToCartProducts)")
+        }
+    }
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         
         let nibGroup = UINib(nibName: "GroupCell", bundle: nil)
         groupsCollectionView.register(nibGroup, forCellWithReuseIdentifier: "GroupCell")
@@ -61,6 +67,7 @@ class BrandsViewController: UIViewController {
         collectionView.register(nibProduct, forCellWithReuseIdentifier: "ProductCell")
         collectionView.delegate = self
         collectionView.dataSource = self
+        
         
         
 //        if let group = menu.groups.first?.groups, group.count > 0 {
@@ -75,6 +82,9 @@ class BrandsViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("BrandsViewController BrandsViewController BrandsViewController")
+        
+        getFetchDataHVC()
+        
         incomingRef?.observe(.value){ (snapshot) in
             
             let garderob = PopularGarderob()
@@ -174,6 +184,19 @@ class BrandsViewController: UIViewController {
         }
     }
     
+    
+    private func getFetchDataHVC() {
+        
+        guard let tabBarVCs = tabBarController?.viewControllers else { return }
+        for vc in tabBarVCs {
+            if let nc = vc as? UINavigationController {
+                if let homeVC = nc.viewControllers.first as? HomeViewController {
+                    self.addedToCartProducts = homeVC.addedToCardProducts
+                }
+            }
+        }
+    }
+    
 
 }
 
@@ -263,6 +286,13 @@ extension BrandsViewController: ProductCellDelegtate {
         arrayPin.forEach { (places) in
             if malls.contains(places.title ?? "") {
                 placesArray.append(places)
+            }
+        }
+        
+        addedToCartProducts.forEach { (addedProduct) in
+           
+            if addedProduct.model == model.model {
+                productVC.isAddedToCard = true
             }
         }
         
