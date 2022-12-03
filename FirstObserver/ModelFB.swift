@@ -131,14 +131,14 @@ class AddedProduct: Encodable {
     let model: String
     let description: String
     let price: String
-    let refArray: [String]
+    let refImage: [String]
     let malls: [String]
     
     init(product: PopularProduct) {
         self.model = product.model
         self.description = product.description
         self.price = product.price
-        self.refArray = product.refArray
+        self.refImage = product.refArray
         self.malls = product.malls
     }
 }

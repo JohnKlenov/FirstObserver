@@ -17,14 +17,20 @@ class CartViewController: UIViewController {
     var model: [Product]!
     var heightCell: CGFloat!
     var imageWidth: CGFloat!
+    var arrayPlaces: [PlacesTest] = []
     
-    private lazy var ref: DatabaseReference? = {
-        guard let uid = Auth.auth().currentUser?.uid else { return nil }
-        let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
-        return ref
-    }()
+//    private lazy var ref: DatabaseReference? = {
+//        guard let uid = Auth.auth().currentUser?.uid else { return nil }
+//        let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
+//        return ref
+//    }()
     
     var addedInCartProducts: [PopularProduct] = []
+//    {
+//        didSet {
+//            tableView.reloadData()
+//        }
+//    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,43 +52,45 @@ class CartViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        ref?.observe(.value) { (snapshot) in
-            
-            var arrayProduct = [PopularProduct]()
-            
-            for item in snapshot.children {
-                let addedProduct = item as! DataSnapshot
-                
-                var arrayMalls = [String]()
-                var arrayRefe = [String]()
-                for childItem in addedProduct.children {
-                    let childItem = childItem as! DataSnapshot
-                    switch childItem.key {
-                    case "malls":
-                        for it in childItem.children {
-                            let item = it as! DataSnapshot
-                            if let refDictionary = item.value as? String {
-                                arrayMalls.append(refDictionary)
-                            }
-                        }
-                    case "refArray":
-                        for it in childItem.children {
-                            let item = it as! DataSnapshot
-                            if let refDictionary = item.value as? String {
-                                arrayRefe.append(refDictionary)
-                            }
-                        }
-                    default:
-                        break
-                    }
-                }
-                //
-                let product = PopularProduct(snapshot: addedProduct, refArray: arrayRefe, malls: arrayMalls)
-                arrayProduct.append(product)
-            }
-            self.addedInCartProducts = arrayProduct
-            self.tableView.reloadData()
-        }
+        getFetchDataHVC()
+        
+//        ref?.observe(.value) { (snapshot) in
+//
+//            var arrayProduct = [PopularProduct]()
+//
+//            for item in snapshot.children {
+//                let addedProduct = item as! DataSnapshot
+//
+//                var arrayMalls = [String]()
+//                var arrayRefe = [String]()
+//                for childItem in addedProduct.children {
+//                    let childItem = childItem as! DataSnapshot
+//                    switch childItem.key {
+//                    case "malls":
+//                        for it in childItem.children {
+//                            let item = it as! DataSnapshot
+//                            if let refDictionary = item.value as? String {
+//                                arrayMalls.append(refDictionary)
+//                            }
+//                        }
+//                    case "refArray":
+//                        for it in childItem.children {
+//                            let item = it as! DataSnapshot
+//                            if let refDictionary = item.value as? String {
+//                                arrayRefe.append(refDictionary)
+//                            }
+//                        }
+//                    default:
+//                        break
+//                    }
+//                }
+//                //
+//                let product = PopularProduct(snapshot: addedProduct, refArray: arrayRefe, malls: arrayMalls)
+//                arrayProduct.append(product)
+//            }
+//            self.addedInCartProducts = arrayProduct
+//            self.tableView.reloadData()
+//        }
     }
     
     
@@ -92,6 +100,20 @@ class CartViewController: UIViewController {
         let headView = UIView.init(frame: CGRect(x: 0, y: 0, width: self.tableView.frame.width , height: 5))
         headView.backgroundColor = .white
         tableView.tableHeaderView = headView
+    }
+    
+    private func getFetchDataHVC() {
+        
+        guard let tabBarVCs = tabBarController?.viewControllers else { return }
+        tabBarVCs.forEach { (vc) in
+            if let nc = vc as? UINavigationController {
+                if let homeVC = nc.topViewController as? HomeViewController {
+                    self.arrayPlaces = homeVC.arrayPin
+                    self.addedInCartProducts = homeVC.addedToCardProducts
+                    tableView.reloadData()
+                }
+            }
+        }
     }
     
 }
@@ -118,15 +140,35 @@ extension CartViewController: UITableViewDelegate, UITableViewDataSource {
         if editingStyle == .delete {
             let product = addedInCartProducts[indexPath.row]
             product.refProduct.removeValue()
-            tableView.reloadRows(at: [indexPath], with: .automatic)
+            addedInCartProducts.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+//            tableView.reloadRows(at: [indexPath], with: .automatic)
         }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
-//        let productVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ProductViewController") as! ProductViewController
-////        productVC.text = textViewText
-//        self.navigationController?.pushViewController(productVC, animated: true)
+        var placesArray: [PlacesTest] = []
+        let product = addedInCartProducts[indexPath.row]
+        let malls = product.malls
+        
+        arrayPlaces.forEach { (places) in
+            if malls.contains(places.title ?? "") {
+                placesArray.append(places)
+            }
+        }
+        
+        let productVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ProductViewController") as! ProductViewController
+        
+        addedInCartProducts.forEach { (addedProduct) in
+            if addedProduct.model == product.model {
+                productVC.isAddedToCard = true
+            }
+        }
+        
+        productVC.arrayPin = placesArray
+        productVC.fireBaseModel = product
+        self.navigationController?.pushViewController(productVC, animated: true)
     }
     
 }
