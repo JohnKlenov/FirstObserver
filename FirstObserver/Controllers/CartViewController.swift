@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import Firebase
+import FirebaseAuth
 
 class CartViewController: UIViewController {
     
@@ -16,7 +18,13 @@ class CartViewController: UIViewController {
     var heightCell: CGFloat!
     var imageWidth: CGFloat!
     
-    var textViewText = "Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda."
+    private lazy var ref: DatabaseReference? = {
+        guard let uid = Auth.auth().currentUser?.uid else { return nil }
+        let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
+        return ref
+    }()
+    
+    var addedInCartProducts: [PopularProduct] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,7 +33,6 @@ class CartViewController: UIViewController {
         
         heightCell = self.tableView.frame.height/7
         imageWidth = heightCell - 30
-        setupModel()
         let nib = UINib(nibName: "CartTableViewCell", bundle: nil)
         tableView.register(nib, forCellReuseIdentifier: "CartTableViewCell")
         
@@ -34,6 +41,48 @@ class CartViewController: UIViewController {
         
         tableView.delegate = self
         tableView.dataSource = self
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        ref?.observe(.value) { (snapshot) in
+            
+            var arrayProduct = [PopularProduct]()
+            
+            for item in snapshot.children {
+                let addedProduct = item as! DataSnapshot
+                
+                var arrayMalls = [String]()
+                var arrayRefe = [String]()
+                for childItem in addedProduct.children {
+                    let childItem = childItem as! DataSnapshot
+                    switch childItem.key {
+                    case "malls":
+                        for it in childItem.children {
+                            let item = it as! DataSnapshot
+                            if let refDictionary = item.value as? String {
+                                arrayMalls.append(refDictionary)
+                            }
+                        }
+                    case "refArray":
+                        for it in childItem.children {
+                            let item = it as! DataSnapshot
+                            if let refDictionary = item.value as? String {
+                                arrayRefe.append(refDictionary)
+                            }
+                        }
+                    default:
+                        break
+                    }
+                }
+                //
+                let product = PopularProduct(snapshot: addedProduct, refArray: arrayRefe, malls: arrayMalls)
+                arrayProduct.append(product)
+            }
+            self.addedInCartProducts = arrayProduct
+            self.tableView.reloadData()
+        }
     }
     
     
@@ -45,31 +94,19 @@ class CartViewController: UIViewController {
         tableView.tableHeaderView = headView
     }
     
-    
-    func setupModel() {
-        
-        let p1 = Product(name: "Nike AIR FORCE White", price: 350, image: UIImage(named: "p1")!)
-        let p2 = Product(name: "Nike x Carhartt WIP AIR FORCE", price: 280, image: UIImage(named: "p2")!)
-        let p3 = Product(name: "Nike AIR TAILWIND 79", price: 455, image: UIImage(named: "p3")!)
-        
-        model = [p1,p2,p3]
-       
-        
-    }
-
 }
 
 
 extension CartViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return model.count
+        return addedInCartProducts.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CartTableViewCell", for: indexPath) as! CartTableViewCell
-        cell.configureCell(model: model[indexPath.row], imageWidth: imageWidth)
+        cell.configureCell(model: addedInCartProducts[indexPath.row], imageWidth: imageWidth)
         return cell
     }
     
@@ -79,16 +116,17 @@ extension CartViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            model.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .fade)
+            let product = addedInCartProducts[indexPath.row]
+            product.refProduct.removeValue()
+            tableView.reloadRows(at: [indexPath], with: .automatic)
         }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
-        let productVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ProductViewController") as! ProductViewController
-//        productVC.text = textViewText
-        self.navigationController?.pushViewController(productVC, animated: true)
+//        let productVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ProductViewController") as! ProductViewController
+////        productVC.text = textViewText
+//        self.navigationController?.pushViewController(productVC, animated: true)
     }
     
 }

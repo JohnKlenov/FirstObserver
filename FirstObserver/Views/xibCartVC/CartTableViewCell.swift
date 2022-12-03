@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import FirebaseStorage
+import FirebaseStorageUI
 
 class CartTableViewCell: UITableViewCell {
     
@@ -16,9 +18,11 @@ class CartTableViewCell: UITableViewCell {
     @IBOutlet weak var containerView: UIView!
     
     @IBOutlet weak var imageWidth: NSLayoutConstraint!
+    var storage:Storage!
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        storage = Storage.storage()
         self.containerView.layer.cornerRadius = 10
     }
 
@@ -34,10 +38,13 @@ class CartTableViewCell: UITableViewCell {
 //        contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: 10, right: 0))
 //    }
     
-    func configureCell(model: Product, imageWidth: CGFloat) {
+    func configureCell(model: PopularProduct, imageWidth: CGFloat) {
         
-        self.cartImage.image = model.image
-        self.brandName.text = model.name
+        if let stringRef = model.refArray.first {
+            let storageRef = storage.reference(forURL: stringRef)
+            cartImage.sd_setImage(with: storageRef, placeholderImage: UIImage(named: "DefaultImage"))
+        }
+        self.brandName.text = model.model
         self.price.text = "\(String(model.price)) BYN"
         self.imageWidth.constant = imageWidth
     }
