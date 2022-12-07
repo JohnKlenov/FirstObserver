@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import FirebaseAuth
+import Firebase
 
 class SignUpViewController: UIViewController {
     
@@ -85,7 +87,6 @@ class SignUpViewController: UIViewController {
     }
     
     @objc func keyboardWillShowUp(notification: Notification) {
-        print("keyboardWillShowUp keyboardWillShowUp")
         let userInfo = notification.userInfo!
         let keyboardFrame = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
         continueButton.center = CGPoint(x: view.center.x, y: view.frame.height - keyboardFrame.height - 25 - continueButton.frame.height/2)
@@ -93,7 +94,6 @@ class SignUpViewController: UIViewController {
     }
     
     @objc func keyboardWillHideUp(notification: Notification) {
-        print("keyboardWillHideUp keyboardWillHideUp")
         continueButton.center = buttonCenter
         activityIndicator.center = continueButton.center
     }
@@ -149,8 +149,6 @@ class SignUpViewController: UIViewController {
     
     private func registerUser(email: String?, password: String?, completion: @escaping (AuthResult) -> Void) {
         
-       
-        
         guard let email = emailTextField.text, Validators.isValidEmailAddr(strToValidate: email) else {
             completion(AuthResult.failure(AuthError.invalidEmail))
             return
@@ -160,11 +158,59 @@ class SignUpViewController: UIViewController {
             completion(.failure(AuthError.notEqualPassword))
             return
         }
-
-        completion(.success)
         
-    }
+        guard let user = Auth.auth().currentUser else {
+            print("SignUpViewController - user not!!!")
+            return
+        }
+        
+        if user.isAnonymous {
+           
+            let credential = EmailAuthProvider.credential(withEmail: email, password: password)
+            user.link(with: credential, completion: { (result, error) in
 
+                guard error == nil else {
+                    print("SignUpViewController - НЕ приобразовали анонимную учетную запись в постоянную!!!")
+                    print("\(String(describing: error))")
+                    return
+                }
+                
+                guard let user = result?.user else {
+                    print("SignUpViewController Result - НЕ приобразовали анонимную учетную запись в постоянную!!!")
+                    return
+                }
+                
+                let uid = user.uid
+                let refFBR = Database.database().reference()
+                refFBR.child("usersAccaunt/\(uid)").updateChildValues(["uidPermanent":user.uid])
+                refFBR.child("usersAccaunt/\(uid)/uidAnonymous").setValue(nil)
+            })
+            
+        } else {
+            
+            Auth.auth().createUser(withEmail: email, password: password) { (result, error) in
+
+                guard error == nil else {
+                    print("SignUpViewController - Permanent user Not Create Accaunt!!!")
+                    print("\(String(describing: error))")
+                    return
+                }
+
+                guard let user = result?.user else {
+                    print("SignUpViewController Result - Permanent user is not Create!")
+                    return
+                }
+
+                let uid = user.uid
+                let refFBR = Database.database().reference()
+                refFBR.child("usersAccaunt/\(uid)").setValue(["uidPermanent":user.uid])
+            }
+            
+        }
+        completion(.success)
+    }
+    
+    
     private func setContinueButton(enabled: Bool) {
         if enabled {
             continueButton.alpha = 1

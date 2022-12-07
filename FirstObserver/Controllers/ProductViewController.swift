@@ -133,6 +133,8 @@ class ProductViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        UserDefaults.standard.set(false, forKey: "WarningKey")
+        
         configureButton()
         
         storage = Storage.storage()

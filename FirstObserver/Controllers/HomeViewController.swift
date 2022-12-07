@@ -74,7 +74,7 @@ class HomeViewController: UIViewController {
     var arrayInArray = [String:Any]() {
         didSet {
             if arrayInArray.count == 3 {
-                print("arrayInArray arrayInArray arrayInArray\(arrayInArray.count)")
+//                print("arrayInArray arrayInArray arrayInArray\(arrayInArray.count)")
                 self.homeTableView.reloadData()
                 loader.stopAnimating()
                 activityContainerView.removeFromSuperview()
@@ -92,7 +92,7 @@ class HomeViewController: UIViewController {
     var arrayPin:[PlacesTest] = []
     var arrayPins:[PlacesFB] = [] {
         didSet {
-            print("arrayPins didSet arrayPins didSet arrayPins didSet")
+//            print("arrayPins didSet arrayPins didSet arrayPins didSet")
             getPlaces()
         }
     }
@@ -110,24 +110,43 @@ class HomeViewController: UIViewController {
        
         storage = Storage.storage()
         ref = Database.database().reference()
-       
-        if Auth.auth().currentUser == nil {
-            print("Auth.auth().currentUser == nil  Auth.auth().currentUser == nil  Auth.auth().currentUser == nil ")
-//            let refFBR = Database.database().reference().child("usersAccaunt")
-            let refFBR = Database.database().reference()
-            Auth.auth().signInAnonymously { (authResult, error) in
-                guard let user = authResult?.user else {return}
-                let uid = user.uid
-                refFBR.child("usersAccaunt/\(uid)").setValue(["uid":user.uid])
-//                refFBR.setValue(["uid":user.uid])
+        
+        // addStateDidChangeListener работает в режиме наблюдателя и постоянно делает запросы в сеть
+        // При слиянии anonymous user с permanent user Auth.auth().addStateDidChangeListener не срабатывает!
+        // signIn and signOut срабатывает!
+        Auth.auth().addStateDidChangeListener { (auth, user) in
+            print("%%%%%%% auth.currentUser?.isAnonymous - \(String(describing: auth.currentUser?.isAnonymous))")
+            if auth.currentUser == nil {
+                print("Auth.auth().currentUser == nil  Auth.auth().currentUser == nil  Auth.auth().currentUser == nil ")
+                self.addedToCardProducts = []
+                let refFBR = Database.database().reference()
+                Auth.auth().signInAnonymously { (authResult, error) in
+                    guard let user = authResult?.user else {return}
+                    let uid = user.uid
+                    refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":user.uid])
             }
-        } else {
+            } else {
+                print("Auth.auth().currentUser?.uid - \(String(describing: Auth.auth().currentUser?.uid))")
+                print("user no null!")
+            }
             
-            print("Auth.auth().currentUser?.uid - \(String(describing: Auth.auth().currentUser?.uid))")
-            print("user no null!")
+//        if Auth.auth().currentUser == nil {
+//            print("Auth.auth().currentUser == nil  Auth.auth().currentUser == nil  Auth.auth().currentUser == nil ")
+////            let refFBR = Database.database().reference().child("usersAccaunt")
+//            let refFBR = Database.database().reference()
+//            Auth.auth().signInAnonymously { (authResult, error) in
+//                guard let user = authResult?.user else {return}
+//                let uid = user.uid
+//                refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":user.uid])
+////                refFBR.setValue(["uid":user.uid])
+//            }
+//        } else {
+//
+//            print("Auth.auth().currentUser?.uid - \(String(describing: Auth.auth().currentUser?.uid))")
+//            print("user no null!")
+//        }
+        
         }
-        
-        
         
         self.title = "Observer"
         calculateHeightCell()
@@ -222,7 +241,7 @@ class HomeViewController: UIViewController {
         
         
         let userId = Auth.auth().currentUser?.uid
-        print("userId - \(String(describing: userId))")
+        print("!!!!!!!! userId - \(String(describing: userId)) @@@@@@@@@@")
         ref.child("usersAccaunt/\(userId ?? "")").observe(.value) { [weak self] (snapshot) in
             for item in snapshot.children {
                 let item = item as! DataSnapshot
@@ -311,7 +330,7 @@ class HomeViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        ref.removeAllObservers()
+//        ref.removeAllObservers()
     }
     
     
@@ -414,7 +433,6 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         
         switch indexPath.row {
         case 0:
-            print("ShopingMall ShopingMall ShopingMall")
             let shopingCell = tableView.dequeueReusableCell(withIdentifier: "ShopingMall") as! ShopingMallCell
             let malls = arrayInArray["malls"] as! [PreviewCategory]
             
@@ -424,7 +442,6 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
             shopingCell.backgroundColor = .black
             return shopingCell
         case 1:
-            print("BrandCell BrandCell BrandCell")
             let brandCell = tableView.dequeueReusableCell(withIdentifier: "BrandCell") as! BrandCell
             let brands = arrayInArray["brands"] as! [PreviewCategory]
             brandCell.configureCell(arrayBrands: brands)
@@ -432,7 +449,6 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
             brandCell.backgroundColor = .blue
             return brandCell
         case 2:
-            print("PopularProductCell PopularProductCell PopularProductCell")
             let popularCell = tableView.dequeueReusableCell(withIdentifier: "PopularProductCell") as! PopularProductCell
             popularCell.delegate = self
             let product = arrayInArray["popularProduct"] as! [PopularProduct]
