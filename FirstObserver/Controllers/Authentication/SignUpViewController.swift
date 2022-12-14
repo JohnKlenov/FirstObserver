@@ -34,6 +34,8 @@ class SignUpViewController: UIViewController {
     let activityIndicator = UIActivityIndicatorView(style: .medium)
     var buttonCenter: CGPoint!
     var isFlag = false
+    weak var delegate: SaveRemuveCartProductSIVCDelegate?
+    var isInvalidSignIn:Bool = false
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
@@ -165,6 +167,10 @@ class SignUpViewController: UIViewController {
         }
         
         if user.isAnonymous {
+            
+            if isInvalidSignIn {
+                delegate?.saveRemuveCartProductFB()
+            }
            
             let credential = EmailAuthProvider.credential(withEmail: email, password: password)
             user.link(with: credential, completion: { (result, error) in
@@ -241,6 +247,10 @@ class SignUpViewController: UIViewController {
         activityIndicator.color = .gray
         activityIndicator.frame = CGRect(x: 0, y: 0, width: 45, height: 45)
         activityIndicator.center = continueButton.center
+    }
+    
+    deinit {
+        print("SignUpViewController SignUpViewController SignUpViewController isDead!!!!")
     }
    
 }

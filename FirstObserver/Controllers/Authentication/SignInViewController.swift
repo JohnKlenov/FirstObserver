@@ -9,7 +9,10 @@ import UIKit
 import FirebaseAuth
 import Firebase
 
-// if request.auth != null
+protocol SaveRemuveCartProductSIVCDelegate: AnyObject {
+    func saveRemuveCartProductFB()
+}
+
 class SignInViewController: UIViewController {
     
     @IBOutlet weak var emailTextField: UITextField!
@@ -107,6 +110,15 @@ class SignInViewController: UIViewController {
     }
     
 
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "goToSignUp" {
+            if let vc = segue.destination as? SignUpViewController {
+                vc.delegate = self
+                vc.isInvalidSignIn = isInvalidSignIn
+            }
+            
+        }
+    }
     
     
     // MARK: - Action -
@@ -118,50 +130,45 @@ class SignInViewController: UIViewController {
     
     @IBAction func canselButton(_ sender: Any) {
         
-        if let currentUser = currentUser, currentUser.isAnonymous, isInvalidSignIn {
-            self.saveRemuveCartProductFB()
-        }
+        self.saveRemuveCartProductFB()
         
         self.dismiss(animated: true, completion: nil)
     }
     
     
-    private func saveRemuveCartProductFB() {
-        
-        
-        
-        guard let uid = currentUser?.uid else { return }
-        
-        let refFBR = Database.database().reference()
-        refFBR.child("usersAccaunt/\( uid)").setValue(["uidAnonymous":uid])
-        print("addedInCartProducts - \(addedInCartProducts.count)")
-        var removeCartProduct: [String:AddedProduct] = [:]
-       
-        addedInCartProducts.forEach { (cartProduct) in
-            let productEncode = AddedProduct(product: cartProduct)
-            print("cartProduct - \(productEncode)")
-            removeCartProduct[cartProduct.model] = productEncode
-        }
-        
-        print("cartProduct - \(removeCartProduct.count)")
-        
-        removeCartProduct.forEach { (addedProduct) in
-            do {
-                let data = try encoder.encode(addedProduct.value)
-                let json = try JSONSerialization.jsonObject(with: data)
-                let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
-                ref.updateChildValues([addedProduct.key:json])
-                
-            } catch {
-                print("an error occured", error)
-            }
-        }
-        
-        
-        
-        
-        
-    }
+    
+    
+//     func saveRemuveCartProductFB() {
+//
+//        if let currentUser = currentUser, currentUser.isAnonymous, isInvalidSignIn {
+//            let uid = currentUser.uid
+//
+//            let refFBR = Database.database().reference()
+//            refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":uid])
+//            print("addedInCartProducts - \(addedInCartProducts.count)")
+//            var removeCartProduct: [String:AddedProduct] = [:]
+//
+//            addedInCartProducts.forEach { (cartProduct) in
+//                let productEncode = AddedProduct(product: cartProduct)
+//                print("cartProduct - \(productEncode)")
+//                removeCartProduct[cartProduct.model] = productEncode
+//            }
+//
+//            print("cartProduct - \(removeCartProduct.count)")
+//
+//            removeCartProduct.forEach { (addedProduct) in
+//                do {
+//                    let data = try encoder.encode(addedProduct.value)
+//                    let json = try JSONSerialization.jsonObject(with: data)
+//                    let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
+//                    ref.updateChildValues([addedProduct.key:json])
+//
+//                } catch {
+//                    print("an error occured", error)
+//                }
+//            }
+//        }
+//    }
     
     
     @IBAction func textFieldChanged(_ sender: UITextField) {
@@ -359,6 +366,10 @@ class SignInViewController: UIViewController {
 //    }
 
     
+    deinit {
+        self.saveRemuveCartProductFB()
+        print("SignInViewController SignInViewController SignInViewController isDead!!!!")
+    }
 }
 
 extension SignInViewController: UITextFieldDelegate {
@@ -396,3 +407,39 @@ extension UITextField {
     }
 }
 
+extension SignInViewController: SaveRemuveCartProductSIVCDelegate {
+    
+    func saveRemuveCartProductFB() {
+       
+        if let currentUser = currentUser, currentUser.isAnonymous, isInvalidSignIn {
+            let uid = currentUser.uid
+
+            let refFBR = Database.database().reference()
+            refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":uid])
+            print("addedInCartProducts - \(addedInCartProducts.count)")
+            var removeCartProduct: [String:AddedProduct] = [:]
+
+            addedInCartProducts.forEach { (cartProduct) in
+                let productEncode = AddedProduct(product: cartProduct)
+                print("cartProduct - \(productEncode)")
+                removeCartProduct[cartProduct.model] = productEncode
+            }
+
+            print("cartProduct - \(removeCartProduct.count)")
+
+            removeCartProduct.forEach { (addedProduct) in
+                do {
+                    let data = try encoder.encode(addedProduct.value)
+                    let json = try JSONSerialization.jsonObject(with: data)
+                    let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
+                    ref.updateChildValues([addedProduct.key:json])
+
+                } catch {
+                    print("an error occured", error)
+                }
+            }
+        }
+    }
+    
+    
+}
