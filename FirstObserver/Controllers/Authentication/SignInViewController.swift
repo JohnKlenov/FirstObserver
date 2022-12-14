@@ -36,15 +36,24 @@ class SignInViewController: UIViewController {
     
     let tapGestureRecognizer = UITapGestureRecognizer()
     
+    var addedInCartProducts: [PopularProduct] = []
+    private let encoder = JSONEncoder()
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
     
+    weak var delegate: AddedToCardProductsPVCDelegate?
+    
+    var isInvalidSignIn:Bool = false
+    
+    var currentUser: User?
    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        currentUser = Auth.auth().currentUser
         
         passwordTextField.autocorrectionType = .no
 //        emailTextField.autocorrectionType = .no
@@ -58,15 +67,15 @@ class SignInViewController: UIViewController {
         view.addSubview(activityIndicator)
         setContinueButton(enabled: false)
         passwordTextField.enablePasswordToggle()
-        
-        
-        
-
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        delegate?.allProductsToCard(completionHandler: { (deleteCartProducts) in
+            addedInCartProducts = deleteCartProducts
+            print("deleteCartProducts deleteCartProducts deleteCartProducts захвачено из HVC - \(addedInCartProducts.count)")
+        })
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -90,7 +99,7 @@ class SignInViewController: UIViewController {
         if !bool {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 //                self.setupAllertSignIn()
-                self.setupAlert(title: "Авторизируйтесь!", message: "Что бы ваши данные были сохранены на сервере после удаления приложения вам нужно авторизоваться", comletionHandler: nil)
+                self.setupAlert(title: "Авторизируйтесь!", message: "Что бы ваши данные были сохранены на сервере после удаления приложения вам нужно авторизоваться", isCancelButton: true, comletionHandler: nil)
                 self.userDefaults.set(true, forKey: "WarningKey")
             }
         }
@@ -108,10 +117,51 @@ class SignInViewController: UIViewController {
     }
     
     @IBAction func canselButton(_ sender: Any) {
+        
+        if let currentUser = currentUser, currentUser.isAnonymous, isInvalidSignIn {
+            self.saveRemuveCartProductFB()
+        }
+        
         self.dismiss(animated: true, completion: nil)
     }
     
-
+    
+    private func saveRemuveCartProductFB() {
+        
+        
+        
+        guard let uid = currentUser?.uid else { return }
+        
+        let refFBR = Database.database().reference()
+        refFBR.child("usersAccaunt/\( uid)").setValue(["uidAnonymous":uid])
+        print("addedInCartProducts - \(addedInCartProducts.count)")
+        var removeCartProduct: [String:AddedProduct] = [:]
+       
+        addedInCartProducts.forEach { (cartProduct) in
+            let productEncode = AddedProduct(product: cartProduct)
+            print("cartProduct - \(productEncode)")
+            removeCartProduct[cartProduct.model] = productEncode
+        }
+        
+        print("cartProduct - \(removeCartProduct.count)")
+        
+        removeCartProduct.forEach { (addedProduct) in
+            do {
+                let data = try encoder.encode(addedProduct.value)
+                let json = try JSONSerialization.jsonObject(with: data)
+                let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
+                ref.updateChildValues([addedProduct.key:json])
+                
+            } catch {
+                print("an error occured", error)
+            }
+        }
+        
+        
+        
+        
+        
+    }
     
     
     @IBAction func textFieldChanged(_ sender: UITextField) {
@@ -135,72 +185,60 @@ class SignInViewController: UIViewController {
         
         setContinueButton(enabled: false)
         //        var anonymusUser: User?
-        if let currentUser = Auth.auth().currentUser {
+        if let currentUser = currentUser {
             if currentUser.isAnonymous {
-                setupAlert(title: "Авторизуйтесь", message: "Сейчас вы анонимный пользователь! При переходе на новый account вы потеряете товары в корзине!") {
-                    self.signIn(anonymous: currentUser)
+                    setupAlert(title: "Авторизуйтесь", message: "Сейчас вы анонимный пользователь! При переходе на новый account вы потеряете товары в корзине!", isCancelButton: true) {
+                        self.signIn(anonymous: currentUser)
+                    }
+                } else {
+                    print("signIn(anonymous: nil) signIn(anonymous: nil) signIn(anonymous: nil)")
+                    signIn(anonymous: nil)
                 }
-            } else {
-                print("signIn(anonymous: nil) signIn(anonymous: nil) signIn(anonymous: nil)")
-                signIn(anonymous: nil)
-            }
         }
+       
+        
 
-//        if ((Auth.auth().currentUser?.isAnonymous) != nil) {
-//            //            anonymusUser = Auth.auth().currentUser
-//            // present Alert
-//            setupAlert(title: "Авторизуйтесь", message: "Сейчас вы анонимный пользователь! При переходе на новый account вы потеряете товары в корзине!") {
-//                self.signIn(anonymous: Auth.auth().currentUser)
-//            }
-//        } else {
-//            print("signIn(anonymous: nil) signIn(anonymous: nil) signIn(anonymous: nil)")
-//            signIn(anonymous: nil)
-//        }
-        
-        
-        //                button.setTitle("", for: .normal)
-        //                activityIndicator.startAnimating()
-        //
-        //                guard let email = emailTextField.text, let password = passwordTextField.text else {return}
-        //
-        //
-        //        Auth.auth().signIn(withEmail: email, password: password) { [weak self] (result, error) in
-        //
-        //            if error != nil {
-        //                print("SignInViewController = invailable login or password")
-        //            }
-        //
-        //            if result?.user != nil {
-        //                print("SignInViewController = we login result?.user != nil")
-        //                print("result?.user.uid - \(String(describing: result?.user.uid))")
-        //                self?.setContinueButton(enabled: true)
-        //                self?.button.setTitle("Continue", for: .normal)
-        //                self?.button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
-        //                self?.activityIndicator.stopAnimating()
-        //                if let anonymusUser = anonymusUser {
-        //                    self?.deleteAnonymusUSer(anonymusUser: anonymusUser)
-        //                }
-        //                self?.presentingViewController?.dismiss(animated: true, completion: nil)
-        //            }
-        //        }
+
     }
+    
     
     private func signIn(anonymous: User?) {
         
         button.setTitle("", for: .normal)
         activityIndicator.startAnimating()
         
+        // данная логика invalid -> если мы не вспомним логин и пороль для signIn мы удалим
+        if let anonymusUser = anonymous {
+            let uidUser = anonymusUser.uid
+            Database.database().reference().child("usersAccaunt").child(uidUser).removeValue()
+        }
         guard let email = emailTextField.text, let password = passwordTextField.text else {return}
         
         
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] (result, error) in
-            
+
             if error != nil {
-                print("SignInViewController = invailable login or password")
+
+                let error = error as! AuthErrorCode
+                print("Код ошибки - \(error.errorCode)")
+
+                switch error.errorCode {
+
+                case 17011:
+                    self?.setupAlert(title: "Error!", message: "Invalid email", isCancelButton: false, comletionHandler: nil)
+                    self?.isInvalidSignIn = true
+                case 17009:
+                    self?.setupAlert(title: "Error!", message: "Invalid password", isCancelButton: false, comletionHandler: nil)
+                    self?.isInvalidSignIn = true
+                default:
+                    self?.setupAlert(title: "Error!", message: "Something went wrong try again", isCancelButton: false, comletionHandler: nil)
+                    self?.isInvalidSignIn = true
+                    print("что то пошло не так!!!")
+                }
             }
-            
+
             if result?.user != nil {
-                print("SignInViewController result?.user.uid - \(String(describing: result?.user.uid))")
+                print("?????????????????????????SignInViewController result?.user.uid - \(String(describing: result?.user.uid))")
                 self?.setContinueButton(enabled: true)
                 self?.button.setTitle("Continue", for: .normal)
                 self?.button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
@@ -243,7 +281,8 @@ class SignInViewController: UIViewController {
     
     
     private func deleteAnonymusUSer(anonymusUser:User) {
-                
+       
+        
         anonymusUser.delete { (error) in
             if error != nil {
                 print("SignInViewController Accaunt not delete SignInViewController")
@@ -253,35 +292,33 @@ class SignInViewController: UIViewController {
         }
     }
     
-//    private func setupAllertSignIn() {
-//
-//        let allertController = UIAlertController(title: "Авторизируйтесь!", message: "Что бы ваши данные были сохранены на сервере после удаления приложения вам нужно авторизоваться", preferredStyle: .alert)
-//        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { action in
-//            self.dismiss(animated: true, completion: nil)
-//        }
-//        let continueAction = UIAlertAction(title: "Continue", style: .default, handler: nil)
-//
-//        allertController.addAction(cancelAction)
-//        allertController.addAction(continueAction)
-//
-//        self.present(allertController, animated: true, completion: nil)
-//
-//    }
-    
-    private func setupAlert(title:String, message:String, comletionHandler: (() -> Void)?) {
+    private func setupAlert(title:String, message:String, isCancelButton: Bool, comletionHandler: (() -> Void)?) {
         
         let allertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { action in
-            self.dismiss(animated: true, completion: nil)
-        }
-        let continueAction = UIAlertAction(title: "Continue", style: .default) {_ in
-            if comletionHandler != nil {
-                comletionHandler!()
-            }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { [weak self] action in
+            self?.dismiss(animated: true, completion: nil)
         }
         
-        allertController.addAction(cancelAction)
+        let continueAction = UIAlertAction(title: "Continue", style: .default) { [weak self] _ in
+            if comletionHandler != nil {
+                comletionHandler!()
+                
+            } else {
+                if isCancelButton == false {
+                    self?.activityIndicator.stopAnimating()
+                    self?.button.setTitle("Continue", for: .normal)
+                    self?.button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+                    self?.setContinueButton(enabled: true)
+                    
+            }
+            }
+        }
         allertController.addAction(continueAction)
+       
+        if isCancelButton {
+            allertController.addAction(cancelAction)
+        }
+        
         
         self.present(allertController, animated: true, completion: nil)
         

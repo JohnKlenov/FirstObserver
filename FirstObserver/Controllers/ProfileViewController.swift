@@ -11,6 +11,7 @@ import FirebaseAuth
     class ProfileViewController: UIViewController {
         
         var signOutButton = UIButton()
+
         
         override func viewDidLoad() {
             super.viewDidLoad()
@@ -21,7 +22,8 @@ import FirebaseAuth
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
             
-            if let user = Auth.auth().currentUser, user.isAnonymous {
+            let currentUser = Auth.auth().currentUser
+            if let user = currentUser, user.isAnonymous {
                 signOutButton.isEnabled = false
             } else {
                 signOutButton.isEnabled = true
@@ -29,16 +31,30 @@ import FirebaseAuth
         }
         
         @objc func didTapsignOutButton() {
+           
             do {
                 try Auth.auth().signOut()
-                signOutButton.isEnabled = false
             } catch {
+                print("Что то пошло не так!")
                 print(error)
             }
+            signOutButton.isEnabled = false
+            
+            // Сбросить пароль - Forgot password?
+//            if let user = currentUser, !user.isAnonymous {
+//                if let emailUser = user.email {
+//                    Auth.auth().sendPasswordReset(withEmail: emailUser) { (error) in
+//                        if error != nil {
+//                            print("\(emailUser)")
+//                            print("Что то пошло не так попробуйте еще раз! \(String(describing: error))")
+//                        }
+//                    }
+//                }
+//            }
         }
         
         func setupButton() {
-            
+//
             view.backgroundColor = .systemBackground
             view.addSubview(signOutButton)
             signOutButton.translatesAutoresizingMaskIntoConstraints = false

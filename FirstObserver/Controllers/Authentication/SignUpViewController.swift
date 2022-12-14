@@ -184,6 +184,7 @@ class SignUpViewController: UIViewController {
                 let refFBR = Database.database().reference()
                 refFBR.child("usersAccaunt/\(uid)").updateChildValues(["uidPermanent":user.uid])
                 refFBR.child("usersAccaunt/\(uid)/uidAnonymous").setValue(nil)
+                self.verificationEmail(user: user)
             })
             
         } else {
@@ -204,10 +205,24 @@ class SignUpViewController: UIViewController {
                 let uid = user.uid
                 let refFBR = Database.database().reference()
                 refFBR.child("usersAccaunt/\(uid)").setValue(["uidPermanent":user.uid])
+                self.verificationEmail(user: user)
             }
             
         }
         completion(.success)
+    }
+    
+    // Отправить пользователю электронное письмо с подтверждением регистрации
+    private func verificationEmail(user: User) {
+        user.sendEmailVerification(completion: { (error) in
+            if error != nil {
+                print("sendEmailVerification - Что то пошло не так!!!!")
+            }
+        })
+        // при переходе по ссылке подтверждает свой электронный адрес isEmailVerified
+        // можем пока не подтвердит не создавать ему Accaunt
+        let isEmailVerified = Auth.auth().currentUser?.isEmailVerified
+        print("isEmailVerified - \(String(describing: isEmailVerified))")
     }
     
     

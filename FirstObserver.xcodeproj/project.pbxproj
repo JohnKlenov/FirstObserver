@@ -56,6 +56,7 @@
 		5E8DC52C28D9F37C00275138 /* CustomMapViewProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8DC52B28D9F37C00275138 /* CustomMapViewProduct.swift */; };
 		5E9101DC291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9101DB291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift */; };
 		5E9101DF291CFE4B00D37E92 /* ChildCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9101DE291CFE4B00D37E92 /* ChildCollectionViewController.swift */; };
+		5EBD49A729449F6C00E27F2F /* AlertText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EBD49A629449F6C00E27F2F /* AlertText.swift */; };
 		5EC4764F290D816C0077D940 /* DynamicHeightCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC4764E290D816C0077D940 /* DynamicHeightCollectionView.swift */; };
 /* End PBXBuildFile section */
 
@@ -113,6 +114,7 @@
 		5E8DC52B28D9F37C00275138 /* CustomMapViewProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMapViewProduct.swift; sourceTree = "<group>"; };
 		5E9101DB291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageMallCollectionViewCell.swift; sourceTree = "<group>"; };
 		5E9101DE291CFE4B00D37E92 /* ChildCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildCollectionViewController.swift; sourceTree = "<group>"; };
+		5EBD49A629449F6C00E27F2F /* AlertText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertText.swift; sourceTree = "<group>"; };
 		5EC4764E290D816C0077D940 /* DynamicHeightCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicHeightCollectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -182,6 +184,7 @@
 				5E759F0D28BE130900D17F13 /* Helpers.swift */,
 				5E74BCC728EEEF9B0048D097 /* Validators.swift */,
 				5E74BCC928EEF2F60048D097 /* AuthError.swift */,
+				5EBD49A629449F6C00E27F2F /* AlertText.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -477,6 +480,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5E175A4328CB6ED100773C77 /* ProductViewController.swift in Sources */,
+				5EBD49A729449F6C00E27F2F /* AlertText.swift in Sources */,
 				5E7EF57F28A51B0100814F4D /* ShopingMallCell.swift in Sources */,
 				5E759F0E28BE130900D17F13 /* Helpers.swift in Sources */,
 				5E7C7E2B2919555200AC57CB /* MallCollectionViewCell.swift in Sources */,

@@ -37,11 +37,14 @@ protocol ViewsHomeVCNavigationDelegate: AnyObject {
     func  destinationVC(indexPath: Int, forCell: SwitchCaseNavigationHomeVC, refPath: String)
 }
 
+
+
 class HomeViewController: UIViewController {
     
     @IBOutlet weak var homeTableView: UITableView!
     
     
+//    weak var delegate: AddedToCardProductsHVCDelegate?
     lazy var topView = UIView()
     static let userDefaults = UserDefaults.standard
     
@@ -85,7 +88,9 @@ class HomeViewController: UIViewController {
     
     var addedToCardProducts:[PopularProduct] = [] {
         didSet {
+            print("&&&&& addedToCardProducts addedToCardProducts addedToCardProducts addedToCardProducts &&&&&")
             print("addedToCardProducts \(self.addedToCardProducts)")
+//            delegate?.allProductsToCard(productsToCard: addedToCardProducts)
         }
     }
     
@@ -100,6 +105,22 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //        if Auth.auth().currentUser == nil {
+        //            print("Auth.auth().currentUser == nil  Auth.auth().currentUser == nil  Auth.auth().currentUser == nil ")
+        ////            let refFBR = Database.database().reference().child("usersAccaunt")
+        //            let refFBR = Database.database().reference()
+        //            Auth.auth().signInAnonymously { (authResult, error) in
+        //                guard let user = authResult?.user else {return}
+        //                let uid = user.uid
+        //                refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":user.uid])
+        ////                refFBR.setValue(["uid":user.uid])
+        //            }
+        //        } else {
+        //
+        //            print("Auth.auth().currentUser?.uid - \(String(describing: Auth.auth().currentUser?.uid))")
+        //            print("user no null!")
+        //        }
+        
         self.tabBarController?.view.isUserInteractionEnabled = false
         activityContainerView.addSubview(loader)
         loader.center = activityContainerView.center
@@ -110,6 +131,17 @@ class HomeViewController: UIViewController {
        
         storage = Storage.storage()
         ref = Database.database().reference()
+        
+        self.title = "Observer"
+        calculateHeightCell()
+        homeTableView.dataSource = self
+        homeTableView.delegate = self
+        addTopView()
+    }
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         
         // addStateDidChangeListener работает в режиме наблюдателя и постоянно делает запросы в сеть
         // При слиянии anonymous user с permanent user Auth.auth().addStateDidChangeListener не срабатывает!
@@ -129,35 +161,7 @@ class HomeViewController: UIViewController {
                 print("Auth.auth().currentUser?.uid - \(String(describing: Auth.auth().currentUser?.uid))")
                 print("user no null!")
             }
-            
-//        if Auth.auth().currentUser == nil {
-//            print("Auth.auth().currentUser == nil  Auth.auth().currentUser == nil  Auth.auth().currentUser == nil ")
-////            let refFBR = Database.database().reference().child("usersAccaunt")
-//            let refFBR = Database.database().reference()
-//            Auth.auth().signInAnonymously { (authResult, error) in
-//                guard let user = authResult?.user else {return}
-//                let uid = user.uid
-//                refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":user.uid])
-////                refFBR.setValue(["uid":user.uid])
-//            }
-//        } else {
-//
-//            print("Auth.auth().currentUser?.uid - \(String(describing: Auth.auth().currentUser?.uid))")
-//            print("user no null!")
-//        }
-        
         }
-        
-        self.title = "Observer"
-        calculateHeightCell()
-        homeTableView.dataSource = self
-        homeTableView.delegate = self
-        addTopView()
-    }
-    
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
         
         ref.child("previewMalls").observe(.value) { [weak self] (snapshot) in
             var arrayMalls = [PreviewCategory]()
@@ -331,6 +335,9 @@ class HomeViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 //        ref.removeAllObservers()
+        // отключить прослушиватель состояний
+//        Auth.auth().removeStateDidChangeListener(handle!)
+        
     }
     
     

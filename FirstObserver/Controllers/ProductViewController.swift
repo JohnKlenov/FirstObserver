@@ -13,7 +13,9 @@ import FirebaseAuth
 import Firebase
 
 
-
+protocol AddedToCardProductsPVCDelegate: AnyObject {
+    func allProductsToCard(completionHandler: ([PopularProduct]) -> Void)
+}
 
 class ProductViewController: UIViewController {
 
@@ -87,6 +89,8 @@ class ProductViewController: UIViewController {
     }()
     
     private let encoder = JSONEncoder()
+//    var addedInCartProducts: [PopularProduct] = []
+    
     
     
     @IBAction func didTapAddToCart(_ sender: Any) {
@@ -129,10 +133,28 @@ class ProductViewController: UIViewController {
         
     }
     
+//    private func getaddedToCardProducts(completionHandler: ([PopularProduct]) -> Void) {
+//
+//        let firstNC = navigationController?.viewControllers.first
+//        print("firstNC firstNC firstNC - \(firstNC)")
+//        if let tabBarVCs = firstNC?.tabBarController?.viewControllers {
+//            tabBarVCs.forEach { (vc) in
+//                if let nc = vc as? UINavigationController {
+//                    if let homeVC = nc.viewControllers.first as? HomeViewController {
+//                        print("Get HomeViewController")
+//                        completionHandler(homeVC.addedToCardProducts)
+////                        self.addedInCartProducts = homeVC.addedToCardProducts
+////                        print("ProductViewController - \(addedInCartProducts)")
+//                    }
+//                }
+//            }
+//        }
+//    }
    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+//        getaddedToCardProducts()
         UserDefaults.standard.set(false, forKey: "WarningKey")
         
         configureButton()
@@ -353,6 +375,11 @@ class ProductViewController: UIViewController {
             let destination = segue.destination as! MapViewController
             destination.arrayPin = arrayPin
         }
+        
+        if segue.identifier == "signInVC" {
+            let destination = segue.destination as! SignInViewController
+            destination.delegate = self
+        }
     }
     
     
@@ -565,6 +592,30 @@ extension ProductViewController: MKMapViewDelegate {
         print("didDeselect MKAnnotationView")
     }
 
+}
+
+extension ProductViewController: AddedToCardProductsPVCDelegate {
+  
+    func allProductsToCard(completionHandler: ([PopularProduct]) -> Void) {
+        
+
+            let firstNC = navigationController?.viewControllers.first
+        print("firstNC firstNC firstNC - \(String(describing: firstNC))")
+            if let tabBarVCs = firstNC?.tabBarController?.viewControllers {
+                tabBarVCs.forEach { (vc) in
+                    if let nc = vc as? UINavigationController {
+                        if let homeVC = nc.viewControllers.first as? HomeViewController {
+                            print("Get HomeViewController")
+                            completionHandler(homeVC.addedToCardProducts)
+                        }
+                    }
+                }
+            }
+        }
+    
+    
+    
+    
 }
 
 
