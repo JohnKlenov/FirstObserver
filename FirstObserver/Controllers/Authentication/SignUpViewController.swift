@@ -106,26 +106,24 @@ class SignUpViewController: UIViewController {
         continueButton.setTitle("", for: .normal)
         activityIndicator.startAnimating()
         
-        registerUser(email: emailTextField.text, password: passwordTextField.text) { result in
+        registerUser(email: emailTextField.text, password: passwordTextField.text) { [weak self] (result) in
             switch result {
                 
             case .success:
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    self.setContinueButton(enabled: true)
-                    self.continueButton.setTitle("Continue", for: .normal)
-                    self.activityIndicator.stopAnimating()
-                    self.showAlert(title: "Успешно!", message: "Вы авторизованы") {
-                        self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
-                    }
-                    
+                
+                self?.setContinueButton(enabled: true)
+                self?.continueButton.setTitle("Continue", for: .normal)
+                self?.activityIndicator.stopAnimating()
+                self?.showAlert(title: "Success!", message: "An email has been sent to \(self?.emailTextField.text ?? "email"), please confirm your email address.") {
+                    self?.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
                 }
+                
             case .failure( let error):
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self.setContinueButton(enabled: true)
-                    self.continueButton.setTitle("Continue", for: .normal)
-                    self.activityIndicator.stopAnimating()
-                    self.showAlert(title: "Ошибка", message: error.localizedDescription)
-                }
+                self?.setContinueButton(enabled: true)
+                self?.continueButton.setTitle("Continue", for: .normal)
+                self?.activityIndicator.stopAnimating()
+                self?.showAlert(title: "Error", message: error.localizedDescription)
+                
             }
         }
         
@@ -190,8 +188,9 @@ class SignUpViewController: UIViewController {
                 let refFBR = Database.database().reference()
                 refFBR.child("usersAccaunt/\(uid)").updateChildValues(["uidPermanent":user.uid])
                 refFBR.child("usersAccaunt/\(uid)/uidAnonymous").setValue(nil)
-                self.verificationEmail(user: user)
+                self.verificationEmail()
             })
+            
             
         } else {
             
@@ -211,7 +210,7 @@ class SignUpViewController: UIViewController {
                 let uid = user.uid
                 let refFBR = Database.database().reference()
                 refFBR.child("usersAccaunt/\(uid)").setValue(["uidPermanent":user.uid])
-                self.verificationEmail(user: user)
+                self.verificationEmail()
             }
             
         }
@@ -219,16 +218,14 @@ class SignUpViewController: UIViewController {
     }
     
     // Отправить пользователю электронное письмо с подтверждением регистрации
-    private func verificationEmail(user: User) {
-        user.sendEmailVerification(completion: { (error) in
+    func verificationEmail() {
+        Auth.auth().currentUser?.sendEmailVerification(completion: { (error) in
             if error != nil {
                 print("sendEmailVerification - Что то пошло не так!!!!")
+            } else {
+                print("Мы отправили подтверждение на email")
             }
         })
-        // при переходе по ссылке подтверждает свой электронный адрес isEmailVerified
-        // можем пока не подтвердит не создавать ему Accaunt
-        let isEmailVerified = Auth.auth().currentUser?.isEmailVerified
-        print("isEmailVerified - \(String(describing: isEmailVerified))")
     }
     
     

@@ -5,6 +5,7 @@
 //  Created by Evgenyi on 8.08.22.
 //
 
+
 import UIKit
 import FirebaseAuth
 
@@ -39,18 +40,6 @@ import FirebaseAuth
                 print(error)
             }
             signOutButton.isEnabled = false
-            
-            // Сбросить пароль - Forgot password?
-//            if let user = currentUser, !user.isAnonymous {
-//                if let emailUser = user.email {
-//                    Auth.auth().sendPasswordReset(withEmail: emailUser) { (error) in
-//                        if error != nil {
-//                            print("\(emailUser)")
-//                            print("Что то пошло не так попробуйте еще раз! \(String(describing: error))")
-//                        }
-//                    }
-//                }
-//            }
         }
         
         func setupButton() {
@@ -81,3 +70,16 @@ import FirebaseAuth
          */
         
     }
+
+
+// при переходе по ссылке подтверждает свой электронный адрес isEmailVerified
+// можем пока не подтвердит не создавать ему Accaunt
+
+//let currentUser = Auth.auth().currentUser
+//currentUser?.reload(completion: { (error) in
+//    if error == nil {
+//        if let isEmailVerified = currentUser?.isEmailVerified {
+//            print("Вы подтвердили свою регистрацию - \(isEmailVerified)")
+//        }
+//    }
+//})

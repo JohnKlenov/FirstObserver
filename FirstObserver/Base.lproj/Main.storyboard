@@ -1247,12 +1247,23 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7iW-Cy-2e4">
+                                <rect key="frame" x="144.33333333333331" y="324.66666666666669" width="139.33333333333331" height="31"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Forgot password?">
+                                    <color key="baseForegroundColor" systemColor="systemPurpleColor"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="forgotPasswordButton:" destination="1gf-v3-K6l" eventType="touchUpInside" id="g8J-Ib-2aI"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="V9z-Zq-Pfz"/>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="xrA-Lb-Nq5" firstAttribute="centerX" secondItem="adk-zw-Cf2" secondAttribute="centerX" id="3qA-lb-MFt"/>
                             <constraint firstItem="DEs-hI-OSz" firstAttribute="top" secondItem="V9z-Zq-Pfz" secondAttribute="top" constant="50" id="Kgc-um-zSF"/>
+                            <constraint firstItem="7iW-Cy-2e4" firstAttribute="centerX" secondItem="adk-zw-Cf2" secondAttribute="centerX" id="NAq-jH-MMF"/>
                             <constraint firstItem="DEs-hI-OSz" firstAttribute="centerX" secondItem="adk-zw-Cf2" secondAttribute="centerX" id="SfY-aq-eYQ"/>
                             <constraint firstItem="NIC-V9-U2q" firstAttribute="leading" secondItem="V9z-Zq-Pfz" secondAttribute="leading" constant="40" id="a2O-0F-ljM"/>
                             <constraint firstItem="V9z-Zq-Pfz" firstAttribute="trailing" secondItem="NIC-V9-U2q" secondAttribute="trailing" constant="40" id="dCh-bt-Gfe"/>
@@ -1260,6 +1271,7 @@
                             <constraint firstItem="Vjk-ub-uDE" firstAttribute="top" secondItem="V9z-Zq-Pfz" secondAttribute="top" constant="20" id="rte-6D-clA"/>
                             <constraint firstItem="Vjk-ub-uDE" firstAttribute="leading" secondItem="V9z-Zq-Pfz" secondAttribute="leading" constant="20" id="uAn-RY-Z0t"/>
                             <constraint firstItem="NIC-V9-U2q" firstAttribute="top" secondItem="DEs-hI-OSz" secondAttribute="bottom" constant="20" id="wuz-xb-lx9"/>
+                            <constraint firstItem="7iW-Cy-2e4" firstAttribute="top" secondItem="xrA-Lb-Nq5" secondAttribute="bottom" constant="10" id="yYq-RO-1ri"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="5MK-Q3-ufE"/>

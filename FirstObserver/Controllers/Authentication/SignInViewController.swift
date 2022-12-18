@@ -51,11 +51,14 @@ class SignInViewController: UIViewController {
     var isInvalidSignIn:Bool = false
     
     var currentUser: User?
-   
+    
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+         
         currentUser = Auth.auth().currentUser
         
         passwordTextField.autocorrectionType = .no
@@ -102,7 +105,7 @@ class SignInViewController: UIViewController {
         if !bool {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 //                self.setupAllertSignIn()
-                self.setupAlert(title: "Авторизируйтесь!", message: "Что бы ваши данные были сохранены на сервере после удаления приложения вам нужно авторизоваться", isCancelButton: true, comletionHandler: nil)
+                self.setupAlert(title: "Log In!", message: "In order for your data to be saved on the server after deleting the application, you need to log in.", isCancelButton: true, comletionHandler: nil)
                 self.userDefaults.set(true, forKey: "WarningKey")
             }
         }
@@ -135,6 +138,40 @@ class SignInViewController: UIViewController {
         self.dismiss(animated: true, completion: nil)
     }
     
+    
+    @IBAction func forgotPasswordButton(_ sender: Any) {
+        self.sendPasswordReset(title: "We will send you a link to reset your password", placeholder: "Enter your email") { (enteredEmail) in
+            Auth.auth().sendPasswordReset(withEmail: enteredEmail) { (error) in
+                if error != nil {
+                    self.createTopView(textWarning: "Incorrect email. Please try again.", color: .systemRed) { (alertView) in
+
+                        UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.2, initialSpringVelocity: 0.1, options: .curveEaseIn, animations: {alertView.frame.origin = CGPoint(x: 0, y: -20)}) { (isFinished) in
+                            if isFinished {
+                                // возможно придется скрыть cancel button
+                                UIView.animate(withDuration: 0.5, delay: 5, options: .curveEaseOut, animations: {alertView.frame.origin = CGPoint(x: 0, y: -64)}, completion: nil)
+                            }
+                        }
+                    }
+                } else {
+                    self.createTopView(textWarning: "Password was reset. Please check you email.", color: .systemGreen) { (alertView) in
+
+                        UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.2, initialSpringVelocity: 0.1, options: .curveEaseIn, animations: {alertView.frame.origin = CGPoint(x: 0, y: -20)}) { (isFinished) in
+                            if isFinished {
+                                UIView.animate(withDuration: 0.5, delay: 5, options: .curveEaseOut, animations: {alertView.frame.origin = CGPoint(x: 0, y: -64)}, completion: nil)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    func createTopView(textWarning:String, color: UIColor, comletionHandler: (AlertTopView) -> Void) {
+        let alert = AlertTopView(frame: CGRect(origin: CGPoint(x: 0, y: -64), size: CGSize(width: self.view.frame.width, height: 64)))
+        alert.setupAlertTopView(labelText: textWarning, backgroundColor: color)
+        self.view.addSubview(alert)
+        comletionHandler(alert)
+    }
     
     
     
@@ -194,11 +231,10 @@ class SignInViewController: UIViewController {
         //        var anonymusUser: User?
         if let currentUser = currentUser {
             if currentUser.isAnonymous {
-                    setupAlert(title: "Авторизуйтесь", message: "Сейчас вы анонимный пользователь! При переходе на новый account вы потеряете товары в корзине!", isCancelButton: true) {
+                    setupAlert(title: "Log In", message: "You are now an anonymous user!", isCancelButton: true) {
                         self.signIn(anonymous: currentUser)
                     }
                 } else {
-                    print("signIn(anonymous: nil) signIn(anonymous: nil) signIn(anonymous: nil)")
                     signIn(anonymous: nil)
                 }
         }
