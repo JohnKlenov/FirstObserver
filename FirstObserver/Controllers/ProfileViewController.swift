@@ -11,65 +11,201 @@ import FirebaseAuth
 
     class ProfileViewController: UIViewController {
         
-        var signOutButton = UIButton()
-
+        @IBOutlet weak var imageUser: UIImageView!
+        
+        @IBOutlet weak var editOrDoneButton: UIButton!
+        
+        @IBOutlet weak var cancelButton: UIButton!
+       
+        @IBOutlet weak var userNameTextField: UITextField!
+        
+        @IBOutlet weak var emailUserTextField: UITextField!
+        
+        @IBOutlet weak var radiusViewForTopView: UIView!
+       
+        @IBOutlet weak var signOutButton: UIButton!
+        
+        @IBOutlet weak var deleteAccountButton: UIButton!
+        
+//        var currentUser: User? = {
+//            return Auth.auth().currentUser
+//        } ()
+        var currentUser: User?
+        
+        var isEditButton = true
+        var isTimer = false {
+            didSet {
+                    editOrDoneButton.setNeedsUpdateConfiguration()
+            }
+        }
         
         override func viewDidLoad() {
             super.viewDidLoad()
-            setupButton()
-            // Do any additional setup after loading the view.
+            
+            shadowTopView()
+            configureButton()
         }
         
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
             
-            let currentUser = Auth.auth().currentUser
-            if let user = currentUser, user.isAnonymous {
-                signOutButton.isEnabled = false
+            
+            currentUser = Auth.auth().currentUser
+            if let user = currentUser, !user.isAnonymous {
+                emailUserTextField.text = user.email
+                userNameTextField.text = "John"
+                cancelButton.isHidden = true
+                userNameTextField.isUserInteractionEnabled = false
+                emailUserTextField.isUserInteractionEnabled = false
             } else {
-                signOutButton.isEnabled = true
+                editOrDoneButton.isHidden = true
+                cancelButton.isHidden = true
+                userNameTextField.text = "User is anonymous"
+                userNameTextField.isUserInteractionEnabled = false
+                emailUserTextField.isHidden = true
+                signOutButton.isHidden = true
+                deleteAccountButton.isHidden = true
+               
             }
         }
         
-        @objc func didTapsignOutButton() {
+       
+       
+        @IBAction func didTapEditOrDone(_ sender: UIButton) {
            
+            if isEditButton {
+                switchSaveButton(isSwitch: !isEditButton)
+                cancelButton.isHidden = false
+                emailUserTextField.isUserInteractionEnabled = true
+                userNameTextField.isUserInteractionEnabled = true
+                isEditButton = !isEditButton
+            } else {
+                isTimer = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    self.switchEditButton(isSwitch: !self.isEditButton)
+                    self.cancelButton.isHidden = true
+                    self.emailUserTextField.isUserInteractionEnabled = false
+                    self.userNameTextField.isUserInteractionEnabled = false
+                    self.isEditButton = !self.isEditButton
+                    self.isTimer = false
+                }
+                
+            }
+            
+        }
+
+        @IBAction func didTapCancel(_ sender: UIButton) {
+            
+            cancelButton.isHidden = true
+            emailUserTextField.text = currentUser?.email
+            userNameTextField.text = "John"
+            switchEditButton(isSwitch: true)
+            userNameTextField.isUserInteractionEnabled = false
+            emailUserTextField.isUserInteractionEnabled = false
+            isEditButton = !isEditButton
+            }
+        
+       
+       
+        @IBAction func didTapSignOut(_ sender: UIButton) {
+            
             do {
                 try Auth.auth().signOut()
+                
             } catch {
                 print("Что то пошло не так!")
                 print(error)
             }
-            signOutButton.isEnabled = false
+            
+            if let user = Auth.auth().currentUser?.isAnonymous, user == true {
+                print("user == true")
+                editOrDoneButton.isHidden = true
+                cancelButton.isHidden = true
+                userNameTextField.text = "User is anonymous"
+                userNameTextField.isUserInteractionEnabled = false
+                emailUserTextField.isHidden = true
+                signOutButton.isHidden = true
+                deleteAccountButton.isHidden = true
+            } else {
+                print("user != true")
+            }
+        }
+  
+        @IBAction func didTapSignInSignUp(_ sender: UIButton) {
+        }
+           
+        @IBAction func didTapDeleteAccount(_ sender: UIButton) {
+        }
+
+        @IBAction func didChangeTextFieldNameOrEmail(_ sender: UITextField) {
+            isValidTextField { (isValid) in
+                setEditOrDoneButton(enabled: isValid)
+            }
+        }
+
+        
+        
+        private func setEditOrDoneButton(enabled: Bool) {
+            if enabled {
+                switchSaveButton(isSwitch: enabled)
+            } else {
+                switchSaveButton(isSwitch: enabled)
+            }
         }
         
-        func setupButton() {
-//
-            view.backgroundColor = .systemBackground
-            view.addSubview(signOutButton)
-            signOutButton.translatesAutoresizingMaskIntoConstraints = false
-            
-            signOutButton.configuration = .tinted()
-            signOutButton.configuration?.title = "SignOutButton"
-            signOutButton.configuration?.image = UIImage(systemName: "iphone")
-            signOutButton.configuration?.imagePadding = 8
-            signOutButton.configuration?.baseForegroundColor = .systemTeal
-            signOutButton.configuration?.baseBackgroundColor = .systemTeal
-            signOutButton.addTarget(self, action: #selector(didTapsignOutButton), for: .touchUpInside)
-            
-            
-            NSLayoutConstraint.activate([signOutButton.centerXAnchor.constraint(equalTo: view.centerXAnchor), signOutButton.centerYAnchor.constraint(equalTo: view.centerYAnchor), signOutButton.heightAnchor.constraint(equalToConstant: 50), signOutButton.widthAnchor.constraint(equalToConstant: 280)])
+        
+        private func isValidTextField(comletion: (Bool) -> Void) {
+            guard let email = emailUserTextField.text, let name = userNameTextField.text, let emailUser = currentUser?.email else { return }
+            let isValid = (!(email.isEmpty) && email != emailUser) || (!(name.isEmpty) && name != "John")
+            comletion(isValid)
         }
-        /*
-         // MARK: - Navigation
-         
-         // In a storyboard-based application, you will often want to do a little preparation before navigation
-         override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-         // Get the new view controller using segue.destination.
-         // Pass the selected object to the new view controller.
-         }
-         */
+        
+        private func configureButton() {
+
+            var configButton = UIButton.Configuration.plain()
+            configButton.title = "Edit"
+            configButton.baseForegroundColor = .systemPurple
+            configButton.titleAlignment = .trailing
+            configButton.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incomig in
+
+                var outgoing = incomig
+                outgoing.font = UIFont.systemFont(ofSize: 17, weight: .medium)
+                return outgoing
+            }
+            
+            editOrDoneButton.configuration = configButton
+            editOrDoneButton.configurationUpdateHandler = { button in
+                var config = button.configuration
+                config?.showsActivityIndicator = self.isTimer
+//                button.isEnabled = !self.isTimer
+                button.configuration = config
+            }
+        }
+        
+        private func switchSaveButton(isSwitch: Bool) {
+            editOrDoneButton.configuration?.title = "Save"
+            editOrDoneButton.configuration?.baseForegroundColor = isSwitch ? .systemPurple : .lightGray
+            editOrDoneButton.isUserInteractionEnabled = isSwitch ? true : false
+        }
+        
+        private func switchEditButton(isSwitch: Bool) {
+            editOrDoneButton.configuration?.title = "Edit"
+            editOrDoneButton.configuration?.baseForegroundColor = isSwitch ? .systemPurple : .lightGray
+            editOrDoneButton.isUserInteractionEnabled = isSwitch ? true : false
+        }
+        
+        private func shadowTopView() {
+            radiusViewForTopView.layer.shadowOffset = CGSize(width: 0, height: 10)
+            radiusViewForTopView.layer.shadowOpacity = 0.7
+            radiusViewForTopView.layer.shadowRadius = 5
+            radiusViewForTopView.layer.shadowColor = CGColor(red: 255.0/255.0, green: 45.0/255.0, blue: 85.0/255.0, alpha: 1)
+        }
         
     }
+
+
+
+
 
 
 // при переходе по ссылке подтверждает свой электронный адрес isEmailVerified
@@ -83,3 +219,33 @@ import FirebaseAuth
 //        }
 //    }
 //})
+
+
+//        @objc func didTapsignOutButton() {
+//
+//            do {
+//                try Auth.auth().signOut()
+//            } catch {
+//                print("Что то пошло не так!")
+//                print(error)
+//            }
+//            signOutButton.isEnabled = false
+//        }
+        
+//        func setupButton() {
+////
+//            view.backgroundColor = .systemBackground
+//            view.addSubview(signOutButton)
+//            signOutButton.translatesAutoresizingMaskIntoConstraints = false
+//
+//            signOutButton.configuration = .tinted()
+//            signOutButton.configuration?.title = "SignOutButton"
+//            signOutButton.configuration?.image = UIImage(systemName: "iphone")
+//            signOutButton.configuration?.imagePadding = 8
+//            signOutButton.configuration?.baseForegroundColor = .systemTeal
+//            signOutButton.configuration?.baseBackgroundColor = .systemTeal
+//            signOutButton.addTarget(self, action: #selector(didTapsignOutButton), for: .touchUpInside)
+//
+//
+//            NSLayoutConstraint.activate([signOutButton.centerXAnchor.constraint(equalTo: view.centerXAnchor), signOutButton.centerYAnchor.constraint(equalTo: view.centerYAnchor), signOutButton.heightAnchor.constraint(equalToConstant: 50), signOutButton.widthAnchor.constraint(equalToConstant: 280)])
+//        }

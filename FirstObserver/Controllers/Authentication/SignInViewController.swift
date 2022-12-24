@@ -80,7 +80,6 @@ class SignInViewController: UIViewController {
         
         delegate?.allProductsToCard(completionHandler: { (deleteCartProducts) in
             addedInCartProducts = deleteCartProducts
-            print("deleteCartProducts deleteCartProducts deleteCartProducts захвачено из HVC - \(addedInCartProducts.count)")
         })
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -175,39 +174,6 @@ class SignInViewController: UIViewController {
     
     
     
-//     func saveRemuveCartProductFB() {
-//
-//        if let currentUser = currentUser, currentUser.isAnonymous, isInvalidSignIn {
-//            let uid = currentUser.uid
-//
-//            let refFBR = Database.database().reference()
-//            refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":uid])
-//            print("addedInCartProducts - \(addedInCartProducts.count)")
-//            var removeCartProduct: [String:AddedProduct] = [:]
-//
-//            addedInCartProducts.forEach { (cartProduct) in
-//                let productEncode = AddedProduct(product: cartProduct)
-//                print("cartProduct - \(productEncode)")
-//                removeCartProduct[cartProduct.model] = productEncode
-//            }
-//
-//            print("cartProduct - \(removeCartProduct.count)")
-//
-//            removeCartProduct.forEach { (addedProduct) in
-//                do {
-//                    let data = try encoder.encode(addedProduct.value)
-//                    let json = try JSONSerialization.jsonObject(with: data)
-//                    let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
-//                    ref.updateChildValues([addedProduct.key:json])
-//
-//                } catch {
-//                    print("an error occured", error)
-//                }
-//            }
-//        }
-//    }
-    
-    
     @IBAction func textFieldChanged(_ sender: UITextField) {
         
         
@@ -263,7 +229,6 @@ class SignInViewController: UIViewController {
             if error != nil {
 
                 let error = error as! AuthErrorCode
-                print("Код ошибки - \(error.errorCode)")
 
                 switch error.errorCode {
 
@@ -281,7 +246,6 @@ class SignInViewController: UIViewController {
             }
 
             if result?.user != nil {
-                print("?????????????????????????SignInViewController result?.user.uid - \(String(describing: result?.user.uid))")
                 self?.setContinueButton(enabled: true)
                 self?.button.setTitle("Continue", for: .normal)
                 self?.button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
@@ -328,9 +292,7 @@ class SignInViewController: UIViewController {
         
         anonymusUser.delete { (error) in
             if error != nil {
-                print("SignInViewController Accaunt not delete SignInViewController")
             } else {
-                print("SignInViewController Accaunt delete SignInViewController")
             }
         }
     }
@@ -404,7 +366,6 @@ class SignInViewController: UIViewController {
     
     deinit {
         self.saveRemuveCartProductFB()
-        print("SignInViewController SignInViewController SignInViewController isDead!!!!")
     }
 }
 
@@ -452,7 +413,6 @@ extension SignInViewController: SaveRemuveCartProductSIVCDelegate {
 
             let refFBR = Database.database().reference()
             refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":uid])
-            print("addedInCartProducts - \(addedInCartProducts.count)")
             var removeCartProduct: [String:AddedProduct] = [:]
 
             addedInCartProducts.forEach { (cartProduct) in
@@ -460,8 +420,6 @@ extension SignInViewController: SaveRemuveCartProductSIVCDelegate {
                 print("cartProduct - \(productEncode)")
                 removeCartProduct[cartProduct.model] = productEncode
             }
-
-            print("cartProduct - \(removeCartProduct.count)")
 
             removeCartProduct.forEach { (addedProduct) in
                 do {

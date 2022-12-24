@@ -202,6 +202,13 @@
 			path = viewsMallsVC;
 			sourceTree = "<group>";
 		};
+		5E7C7E3029533ED3001BFBF6 /* viewsProfileVC */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = viewsProfileVC;
+			sourceTree = "<group>";
+		};
 		5E7E2D9C29211EEC00A2F462 /* MapManager */ = {
 			isa = PBXGroup;
 			children = (
@@ -272,6 +279,7 @@
 		5E7EF58528A53B5000814F4D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				5E7C7E3029533ED3001BFBF6 /* viewsProfileVC */,
 				5EA9446F294B5706007C2AB5 /* viewsSignInVC */,
 				5E9101D8291B94EE00D37E92 /* viewsMallVC */,
 				5E7C7E292919551B00AC57CB /* viewsMallsVC */,

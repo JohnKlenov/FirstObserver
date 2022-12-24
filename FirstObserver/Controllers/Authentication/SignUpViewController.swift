@@ -160,7 +160,6 @@ class SignUpViewController: UIViewController {
         }
         
         guard let user = Auth.auth().currentUser else {
-            print("SignUpViewController - user not!!!")
             return
         }
         
@@ -174,16 +173,12 @@ class SignUpViewController: UIViewController {
             user.link(with: credential, completion: { (result, error) in
 
                 guard error == nil else {
-                    print("SignUpViewController - НЕ приобразовали анонимную учетную запись в постоянную!!!")
-                    print("\(String(describing: error))")
                     return
                 }
                 
                 guard let user = result?.user else {
-                    print("SignUpViewController Result - НЕ приобразовали анонимную учетную запись в постоянную!!!")
                     return
                 }
-                
                 let uid = user.uid
                 let refFBR = Database.database().reference()
                 refFBR.child("usersAccaunt/\(uid)").updateChildValues(["uidPermanent":user.uid])
@@ -197,13 +192,10 @@ class SignUpViewController: UIViewController {
             Auth.auth().createUser(withEmail: email, password: password) { (result, error) in
 
                 guard error == nil else {
-                    print("SignUpViewController - Permanent user Not Create Accaunt!!!")
-                    print("\(String(describing: error))")
                     return
                 }
 
                 guard let user = result?.user else {
-                    print("SignUpViewController Result - Permanent user is not Create!")
                     return
                 }
 
@@ -223,7 +215,7 @@ class SignUpViewController: UIViewController {
             if error != nil {
                 print("sendEmailVerification - Что то пошло не так!!!!")
             } else {
-                print("Мы отправили подтверждение на email")
+                print("sendEmailVerification - Мы отправили подтверждение на email")
             }
         })
     }
@@ -247,7 +239,7 @@ class SignUpViewController: UIViewController {
     }
     
     deinit {
-        print("SignUpViewController SignUpViewController SignUpViewController isDead!!!!")
+        //
     }
    
 }
