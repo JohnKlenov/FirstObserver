@@ -35,13 +35,12 @@ import FirebaseAuth
         var isEditButton = true
         var isTimer = false {
             didSet {
-                    editOrDoneButton.setNeedsUpdateConfiguration()
+                editOrDoneButton.setNeedsUpdateConfiguration()
             }
         }
         
         override func viewDidLoad() {
             super.viewDidLoad()
-            
             shadowTopView()
             configureButton()
         }
@@ -80,16 +79,25 @@ import FirebaseAuth
                 userNameTextField.isUserInteractionEnabled = true
                 isEditButton = !isEditButton
             } else {
+                editOrDoneButton.configurationUpdateHandler = { button in
+                    var config = button.configuration
+                    config?.showsActivityIndicator = self.isTimer
+                    config?.title = self.isTimer ? "" : "Edit"
+                    button.isUserInteractionEnabled = !self.isTimer
+                    button.configuration = config
+                    if !self.isTimer {
+                        self.editOrDoneButton.configurationUpdateHandler = nil
+                    }
+                }
                 isTimer = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    self.isTimer = false
                     self.switchEditButton(isSwitch: !self.isEditButton)
                     self.cancelButton.isHidden = true
                     self.emailUserTextField.isUserInteractionEnabled = false
                     self.userNameTextField.isUserInteractionEnabled = false
                     self.isEditButton = !self.isEditButton
-                    self.isTimer = false
                 }
-                
             }
             
         }
@@ -161,7 +169,7 @@ import FirebaseAuth
         }
         
         private func configureButton() {
-
+            print("configureButton")
             var configButton = UIButton.Configuration.plain()
             configButton.title = "Edit"
             configButton.baseForegroundColor = .systemPurple
@@ -174,12 +182,9 @@ import FirebaseAuth
             }
             
             editOrDoneButton.configuration = configButton
-            editOrDoneButton.configurationUpdateHandler = { button in
-                var config = button.configuration
-                config?.showsActivityIndicator = self.isTimer
-//                button.isEnabled = !self.isTimer
-                button.configuration = config
-            }
+            
+
+           
         }
         
         private func switchSaveButton(isSwitch: Bool) {
