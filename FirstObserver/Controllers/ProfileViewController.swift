@@ -8,6 +8,9 @@
 
 import UIKit
 import FirebaseAuth
+import Firebase
+import FirebaseStorage
+import FirebaseStorageUI
 
     class ProfileViewController: UIViewController {
         
@@ -52,7 +55,7 @@ import FirebaseAuth
             currentUser = Auth.auth().currentUser
             if let user = currentUser, !user.isAnonymous {
                 emailUserTextField.text = user.email
-                userNameTextField.text = "John"
+                userNameTextField.text = user.displayName
                 cancelButton.isHidden = true
                 userNameTextField.isUserInteractionEnabled = false
                 emailUserTextField.isUserInteractionEnabled = false
@@ -71,14 +74,11 @@ import FirebaseAuth
        
        
         @IBAction func didTapEditOrDone(_ sender: UIButton) {
-           
+            
             if isEditButton {
-                switchSaveButton(isSwitch: !isEditButton)
-                cancelButton.isHidden = false
-                emailUserTextField.isUserInteractionEnabled = true
-                userNameTextField.isUserInteractionEnabled = true
-                isEditButton = !isEditButton
+                stateEditSaveButton(isSwitch: isEditButton)
             } else {
+                
                 editOrDoneButton.configurationUpdateHandler = { button in
                     var config = button.configuration
                     config?.showsActivityIndicator = self.isTimer
@@ -90,23 +90,33 @@ import FirebaseAuth
                     }
                 }
                 isTimer = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    self.isTimer = false
-                    self.switchEditButton(isSwitch: !self.isEditButton)
-                    self.cancelButton.isHidden = true
-                    self.emailUserTextField.isUserInteractionEnabled = false
-                    self.userNameTextField.isUserInteractionEnabled = false
-                    self.isEditButton = !self.isEditButton
+                // проверка email and name на validation neaded
+                updateProfileInfo(withImage: nil, name: userNameTextField.text != currentUser?.displayName ? userNameTextField.text : nil , email: emailUserTextField.text != currentUser?.email ? emailUserTextField.text : nil) { error in
+                    if error != nil {
+                        print("\(String(describing: error))")
+                        if let error = error as NSError? {
+                            self.editOrDoneButton.configuration?.showsActivityIndicator = false
+                            self.editOrDoneButton.configurationUpdateHandler = nil
+                            self.switchSaveButton(isSwitch: false)
+                            self.setupAlert(title: "Error", message: error.localizedDescription)
+                        }
+                    } else {
+                        self.isTimer = false
+                        self.stateEditSaveButton(isSwitch: self.isEditButton)
+                        self.setupAlert(title: "Success", message: "Data changed!")
+                    }
+                    
                 }
             }
-            
         }
+                
+        
 
         @IBAction func didTapCancel(_ sender: UIButton) {
             
             cancelButton.isHidden = true
             emailUserTextField.text = currentUser?.email
-            userNameTextField.text = "John"
+            userNameTextField.text = currentUser?.displayName
             switchEditButton(isSwitch: true)
             userNameTextField.isUserInteractionEnabled = false
             emailUserTextField.isUserInteractionEnabled = false
@@ -121,7 +131,7 @@ import FirebaseAuth
                 try Auth.auth().signOut()
                 
             } catch {
-                print("Что то пошло не так!")
+                print("Что то пошло не так c didTapSignOut!")
                 print(error)
             }
             
@@ -147,24 +157,24 @@ import FirebaseAuth
 
         @IBAction func didChangeTextFieldNameOrEmail(_ sender: UITextField) {
             isValidTextField { (isValid) in
-                setEditOrDoneButton(enabled: isValid)
+                switchSaveButton(isSwitch: isValid)
             }
         }
 
         
         
-        private func setEditOrDoneButton(enabled: Bool) {
-            if enabled {
-                switchSaveButton(isSwitch: enabled)
-            } else {
-                switchSaveButton(isSwitch: enabled)
-            }
+        private func setupAlert(title: String, message: String) {
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(okAction)
+            present(alert, animated: true, completion: nil)
         }
         
         
         private func isValidTextField(comletion: (Bool) -> Void) {
             guard let email = emailUserTextField.text, let name = userNameTextField.text, let emailUser = currentUser?.email else { return }
-            let isValid = (!(email.isEmpty) && email != emailUser) || (!(name.isEmpty) && name != "John")
+            let isValid = (!(email.isEmpty) && email != emailUser) || (!(name.isEmpty) && name != currentUser?.displayName)
             comletion(isValid)
         }
         
@@ -187,6 +197,16 @@ import FirebaseAuth
            
         }
         
+        private func stateEditSaveButton(isSwitch: Bool) {
+           
+            isSwitch ? switchSaveButton(isSwitch: isSwitch) : switchEditButton(isSwitch: isSwitch)
+            self.switchSaveButton(isSwitch: !isSwitch)
+            self.cancelButton.isHidden = !isSwitch
+            self.emailUserTextField.isUserInteractionEnabled = isSwitch
+            self.userNameTextField.isUserInteractionEnabled = isSwitch
+            self.isEditButton = !isSwitch
+        }
+        
         private func switchSaveButton(isSwitch: Bool) {
             editOrDoneButton.configuration?.title = "Save"
             editOrDoneButton.configuration?.baseForegroundColor = isSwitch ? .systemPurple : .lightGray
@@ -206,12 +226,109 @@ import FirebaseAuth
             radiusViewForTopView.layer.shadowColor = CGColor(red: 255.0/255.0, green: 45.0/255.0, blue: 85.0/255.0, alpha: 1)
         }
         
+        
+        
+        private func createProfileChangeRequest(name: String? = nil, photoURL: URL? = nil,_ callBack: ((Error?) -> Void)? = nil) {
+           
+            if let request = Auth.auth().currentUser?.createProfileChangeRequest() {
+                if let name = name {
+                    request.displayName = name
+                }
+                
+                if let photoURL = photoURL {
+                    request.photoURL = photoURL
+                }
+                
+                request.commitChanges { error in
+                    callBack?(error)
+                }
+            }
+        }
+        
+    
+        func updateProfileInfo(withImage image: Data? = nil, name: String? = nil, email: String? = nil, _ callback: ((Error?) -> ())? = nil) {
+            guard let user = Auth.auth().currentUser else {
+                return
+            }
+
+            if let image = image{
+                let profileImgReference = Storage.storage().reference().child("profile_pictures").child("\(user.uid).png")
+
+                _ = profileImgReference.putData(image, metadata: nil) { (metadata, error) in
+                    if let error = error {
+                        print("putData не удалось передать image в виде data")
+                        callback?(error)
+                        return
+                    } else {
+                        profileImgReference.downloadURL(completion: { (url, error) in
+                            if let url = url{
+                                self.createProfileChangeRequest(photoURL: url, { (error) in
+                                    print("createProfileChangeRequest не изменил url")
+                                    callback?(error)
+                                    return
+                                })
+                            }else{
+                                print("downloadURL не вернул url")
+                                callback?(error)
+                                return
+                            }
+                        })
+                    }
+                }
+            }
+            
+            if let name = name {
+                self.createProfileChangeRequest(name: name) { error in
+                    print("createProfileChangeRequest сработал")
+                    callback?(error)
+                }
+            }
+            
+            if let email = email {
+                user.updateEmail(to: email) { error in
+                    print("updateEmail сработал")
+                    callback?(error)
+                }
+            }
+        }
     }
 
 
-
-
-
+//        func updateProfile(withImage image: Data? = nil, name: String? = nil, _ callback: ((Error?) -> ())? = nil){
+//            guard let user = Auth.auth().currentUser else {
+//                callback?(nil)
+//                return
+//            }
+//
+//            if let image = image{
+//                let profileImgReference = Storage.storage().reference().child("profile_pictures").child("\(user.uid).png")
+//
+//                _ = profileImgReference.putData(image, metadata: nil) { (metadata, error) in
+//                    if let error = error {
+//                        callback?(error)
+//                    } else {
+//                        profileImgReference.downloadURL(completion: { (url, error) in
+//                            if let url = url{
+//                                self.createProfileChangeRequest(name: name, photoURL: url, { (error) in
+//                                    callback?(error)
+//                                })
+//                            }else{
+//                                callback?(error)
+//                            }
+//                        })
+//                    }
+//                }
+//            }else if let name = name{
+//                self.createProfileChangeRequest(name: name, { (error) in
+//                    callback?(error)
+//                })
+//            }else{
+//                callback?(nil)
+//            }
+//        }
+        
+        //
+    
 
 // при переходе по ссылке подтверждает свой электронный адрес isEmailVerified
 // можем пока не подтвердит не создавать ему Accaunt

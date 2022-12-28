@@ -106,7 +106,7 @@ class SignUpViewController: UIViewController {
         continueButton.setTitle("", for: .normal)
         activityIndicator.startAnimating()
         
-        registerUser(email: emailTextField.text, password: passwordTextField.text) { [weak self] (result) in
+        registerUser(email: emailTextField.text, password: passwordTextField.text, name: nameTextField.text) { [weak self] (result) in
             switch result {
                 
             case .success:
@@ -147,7 +147,27 @@ class SignUpViewController: UIViewController {
     }
     
     
-    private func registerUser(email: String?, password: String?, completion: @escaping (AuthResult) -> Void) {
+    private func createProfileChangeRequest(name: String? = nil, photoURL: URL? = nil,_ callBack: ((Error?) -> Void)? = nil) {
+       
+        if let request = Auth.auth().currentUser?.createProfileChangeRequest() {
+            if let name = name {
+                request.displayName = name
+            }
+            
+            if let photoURL = photoURL {
+                request.photoURL = photoURL
+            }
+            
+            request.commitChanges { error in
+                if error != nil {
+                    print("createProfileChangeRequest return error!!!")
+                    callBack?(error)
+                }
+            }
+        }
+    }
+    
+    private func registerUser(email: String?, password: String?, name: String?, completion: @escaping (AuthResult) -> Void) {
         
         guard let email = emailTextField.text, Validators.isValidEmailAddr(strToValidate: email) else {
             completion(AuthResult.failure(AuthError.invalidEmail))
@@ -179,6 +199,9 @@ class SignUpViewController: UIViewController {
                 guard let user = result?.user else {
                     return
                 }
+                
+                self.createProfileChangeRequest(name: name)
+                
                 let uid = user.uid
                 let refFBR = Database.database().reference()
                 refFBR.child("usersAccaunt/\(uid)").updateChildValues(["uidPermanent":user.uid])
@@ -198,6 +221,7 @@ class SignUpViewController: UIViewController {
                 guard let user = result?.user else {
                     return
                 }
+                self.createProfileChangeRequest(name: name)
 
                 let uid = user.uid
                 let refFBR = Database.database().reference()
