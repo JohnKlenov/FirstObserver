@@ -34,13 +34,14 @@ import FirebaseStorageUI
 //            return Auth.auth().currentUser
 //        } ()
         var currentUser: User?
-        
+        var addedToCardProducts: [PopularProduct] = []
         var isEditButton = true
         var isTimer = false {
             didSet {
                 editOrDoneButton.setNeedsUpdateConfiguration()
             }
         }
+        private let encoder = JSONEncoder()
         
         override func viewDidLoad() {
             super.viewDidLoad()
@@ -48,26 +49,33 @@ import FirebaseStorageUI
             configureButton()
         }
         
+        private func currentUserIsAnonymous() {
+            editOrDoneButton.isHidden = true
+            cancelButton.isHidden = true
+            userNameTextField.text = "User is anonymous"
+            userNameTextField.isUserInteractionEnabled = false
+            emailUserTextField.isHidden = true
+            signOutButton.isHidden = true
+            deleteAccountButton.isHidden = true
+        }
+        
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
             
             
-            currentUser = Auth.auth().currentUser
+           currentUser = Auth.auth().currentUser
+            print("viewWillAppear \(String(describing: currentUser?.uid))")
             if let user = currentUser, !user.isAnonymous {
+                emailUserTextField.isHidden = false
                 emailUserTextField.text = user.email
                 userNameTextField.text = user.displayName
                 cancelButton.isHidden = true
                 userNameTextField.isUserInteractionEnabled = false
                 emailUserTextField.isUserInteractionEnabled = false
+                signOutButton.isHidden = false
+                deleteAccountButton.isHidden = false
             } else {
-                editOrDoneButton.isHidden = true
-                cancelButton.isHidden = true
-                userNameTextField.text = "User is anonymous"
-                userNameTextField.isUserInteractionEnabled = false
-                emailUserTextField.isHidden = true
-                signOutButton.isHidden = true
-                deleteAccountButton.isHidden = true
-               
+                currentUserIsAnonymous()
             }
         }
         
@@ -132,10 +140,10 @@ import FirebaseStorageUI
                 
             } catch {
                 print("Что то пошло не так c didTapSignOut!")
-                print(error)
+                print(error.localizedDescription)
             }
             
-            if let user = Auth.auth().currentUser?.isAnonymous, user == true {
+            if let isUser = Auth.auth().currentUser?.isAnonymous, isUser == true {
                 print("user == true")
                 editOrDoneButton.isHidden = true
                 cancelButton.isHidden = true
@@ -144,6 +152,7 @@ import FirebaseStorageUI
                 emailUserTextField.isHidden = true
                 signOutButton.isHidden = true
                 deleteAccountButton.isHidden = true
+                currentUser = Auth.auth().currentUser
             } else {
                 print("user != true")
             }
@@ -152,7 +161,88 @@ import FirebaseStorageUI
         @IBAction func didTapSignInSignUp(_ sender: UIButton) {
         }
            
+        
         @IBAction func didTapDeleteAccount(_ sender: UIButton) {
+            
+            getFetchDataHVC()
+            setupDeleteAlert(title: "Warning", message: "Deleting your account will permanently lose your data!") { isDelete in
+                if isDelete {
+                    self.deleteUserProducts()
+                    // delete data user products
+                    self.deleteAccountButton.configuration?.showsActivityIndicator = true
+                    self.deleteAccaunt { error in
+                        if error != nil {
+                            self.deleteAccountButton.configuration?.showsActivityIndicator = false
+                            if let error = error as NSError? {
+                                // пока решение отлавливать error.code = 17014
+                                print("error.code - \(error.code)")
+                                switch error.code {
+                                case 17014:
+                                    self.wrapperOverDeleteAlert(title: "Error", message: "Enter the password for \(self.emailUserTextField.text ?? "the current account") to delete your account!")
+                                default:
+//                                    self.deleteAccountButton.configuration?.showsActivityIndicator = false
+                                    self.setupFailedAlertDeleteAccount(title: "Failed", message: "Something went wrong. Try again!")
+                                }
+                            }
+                        } else {
+                            self.setupAlert(title: "Success", message: "Current accaunt delete!")
+                            self.deleteAccountButton.configuration?.showsActivityIndicator = false
+                            self.currentUserIsAnonymous()
+                            self.currentUser = Auth.auth().currentUser
+                        }
+                    }
+                } else {
+                    print("Cancel delete Accaunt!")
+                    self.addedToCardProducts = []
+                }
+            }
+        }
+        
+        private func wrapperOverDeleteAlert(title:String, message: String) {
+            self.setupAlertRecentLogin(title: title, message: message, placeholder: "enter password") { password in
+                if let user = Auth.auth().currentUser, let email = self.emailUserTextField.text {
+                    let credential = EmailAuthProvider.credential(withEmail: email, password: password)
+                    self.deleteAccountButton.configuration?.showsActivityIndicator = true
+                    user.reauthenticate(with: credential) { (result, error) in
+                        if let error = error as NSError? {
+                            self.deleteAccountButton.configuration?.showsActivityIndicator = false
+                            print("error.code - \(error.code)")
+                            print("reauthenticate - \(String(describing: error.localizedDescription))")
+                            switch error.code {
+                            case 17009:
+                                self.wrapperOverDeleteAlert(title: "Invalid password", message: "Enter the password for \(self.emailUserTextField.text ?? "the current account") to delete your account!")
+                            default:
+                                self.setupFailedAlertDeleteAccount(title: "Failed", message: "Something went wrong. Try again later!")
+                            }
+                            
+                        } else {
+                            self.deleteAccaunt { error in
+                                if error == nil {
+                                    self.deleteAccountButton.configuration?.showsActivityIndicator = false
+                                    self.currentUserIsAnonymous()
+                                    self.setupAlert(title: "Success", message: "Current accaunt delete!")
+                                    self.currentUser = Auth.auth().currentUser
+                                } else {
+                                    self.deleteAccountButton.configuration?.showsActivityIndicator = false
+                                    self.setupFailedAlertDeleteAccount(title: "Failed", message: "Something went wrong. Try again!")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        private func deleteAccaunt(_ callBack: @escaping (Error?) -> Void) {
+          
+            if let currentUser = Auth.auth().currentUser {
+
+                currentUser.delete { error in
+                    print("deleteAccaunt error - \(String(describing: error?.localizedDescription))")
+                    callBack(error)
+                }
+            }
+            
         }
 
         @IBAction func didChangeTextFieldNameOrEmail(_ sender: UITextField) {
@@ -161,7 +251,29 @@ import FirebaseStorageUI
             }
         }
 
-        
+        // Log in again before retrying this request
+        private func setupAlertRecentLogin(title:String, message:String, placeholder: String, completionHandler: @escaping (String) -> Void ) {
+            
+            let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let actionOK = UIAlertAction(title: "OK", style: .default) { action in
+                print("did OK")
+                let textField = alertController.textFields?.first
+                guard let text = textField?.text else {return}
+                completionHandler(text)
+            }
+            
+            let actionCancel = UIAlertAction(title: "Cancel", style: .cancel) { action in
+                print("did cancel")
+                // save data user remuveProducts
+            }
+            
+            alertController.addAction(actionOK)
+            alertController.addAction(actionCancel)
+            alertController.addTextField { textField in
+                textField.placeholder = placeholder
+            }
+            present(alertController, animated: true, completion: nil)
+        }
         
         private func setupAlert(title: String, message: String) {
             
@@ -169,6 +281,48 @@ import FirebaseStorageUI
             let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
+        }
+        
+        private func setupFailedAlertDeleteAccount(title: String, message: String) {
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default) { action in
+                // save data user remuveProducts
+            }
+            alert.addAction(okAction)
+            present(alert, animated: true, completion: nil)
+        }
+        
+        private func setupAlertDeleteContinue(title: String, message: String, completionHandler: @escaping () -> Void) {
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Cancel", style: .default, handler: nil)
+            let continueAction = UIAlertAction(title: "Continue", style: .destructive) { action in
+                print("did Continue")
+                completionHandler()
+            }
+            alert.addAction(cancelAction)
+            alert.addAction(continueAction)
+            present(alert, animated: true, completion: nil)
+        }
+        
+        private func setupDeleteAlert(title: String, message: String, isDeleteCompletion: @escaping (Bool) -> Void) {
+            
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let deleteAction = UIAlertAction(title: "DELETE", style: .destructive) { action in
+                print(" Did Delete")
+                isDeleteCompletion(true)
+            }
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { action in
+                print("Did Cancel")
+                isDeleteCompletion(false)
+            }
+            
+            alert.addAction(deleteAction)
+            alert.addAction(cancelAction)
+            present(alert, animated: true) {
+                print("Did Delete Accaunt")
+            }
         }
         
         
@@ -245,8 +399,58 @@ import FirebaseStorageUI
             }
         }
         
+        private func getFetchDataHVC() {
+
+            guard let tabBarVCs = tabBarController?.viewControllers else { return }
+            tabBarVCs.forEach { (vc) in
+                if let nc = vc as? UINavigationController {
+                    if let homeVC = nc.topViewController as? HomeViewController {
+                        self.addedToCardProducts = homeVC.addedToCardProducts
+                        print("getFetchDataHVC -  \(addedToCardProducts)")
+                    }
+                }
+            }
+        }
+        
+        private func deleteUserProducts() {
+            if let user = currentUser {
+                let uid = user.uid
+                Database.database().reference().child("usersAccaunt").child(uid).removeValue()
+            }
+        }
+        
+        
+        private func saveRemuveCartProductFB() {
+
+            if let currentUser = currentUser, currentUser.isAnonymous {
+                let uid = currentUser.uid
+
+                let refFBR = Database.database().reference()
+                refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":uid])
+                var removeCartProduct: [String:AddedProduct] = [:]
+
+                addedToCardProducts.forEach { (cartProduct) in
+                    let productEncode = AddedProduct(product: cartProduct)
+                    print("cartProduct - \(productEncode)")
+                    removeCartProduct[cartProduct.model] = productEncode
+                }
+
+                removeCartProduct.forEach { (addedProduct) in
+                    do {
+                        let data = try encoder.encode(addedProduct.value)
+                        let json = try JSONSerialization.jsonObject(with: data)
+                        let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
+                        ref.updateChildValues([addedProduct.key:json])
+
+                    } catch {
+                        print("an error occured", error)
+                    }
+                }
+            }
+        }
+
     
-        func updateProfileInfo(withImage image: Data? = nil, name: String? = nil, email: String? = nil, _ callback: ((Error?) -> ())? = nil) {
+        private func updateProfileInfo(withImage image: Data? = nil, name: String? = nil, email: String? = nil, _ callback: ((Error?) -> ())? = nil) {
             guard let user = Auth.auth().currentUser else {
                 return
             }
@@ -292,82 +496,10 @@ import FirebaseStorageUI
             }
         }
     }
-
-
-//        func updateProfile(withImage image: Data? = nil, name: String? = nil, _ callback: ((Error?) -> ())? = nil){
-//            guard let user = Auth.auth().currentUser else {
-//                callback?(nil)
-//                return
-//            }
-//
-//            if let image = image{
-//                let profileImgReference = Storage.storage().reference().child("profile_pictures").child("\(user.uid).png")
-//
-//                _ = profileImgReference.putData(image, metadata: nil) { (metadata, error) in
-//                    if let error = error {
-//                        callback?(error)
-//                    } else {
-//                        profileImgReference.downloadURL(completion: { (url, error) in
-//                            if let url = url{
-//                                self.createProfileChangeRequest(name: name, photoURL: url, { (error) in
-//                                    callback?(error)
-//                                })
-//                            }else{
-//                                callback?(error)
-//                            }
-//                        })
-//                    }
-//                }
-//            }else if let name = name{
-//                self.createProfileChangeRequest(name: name, { (error) in
-//                    callback?(error)
-//                })
-//            }else{
-//                callback?(nil)
-//            }
-//        }
         
-        //
+       
     
 
-// при переходе по ссылке подтверждает свой электронный адрес isEmailVerified
-// можем пока не подтвердит не создавать ему Accaunt
-
-//let currentUser = Auth.auth().currentUser
-//currentUser?.reload(completion: { (error) in
-//    if error == nil {
-//        if let isEmailVerified = currentUser?.isEmailVerified {
-//            print("Вы подтвердили свою регистрацию - \(isEmailVerified)")
-//        }
-//    }
-//})
 
 
-//        @objc func didTapsignOutButton() {
-//
-//            do {
-//                try Auth.auth().signOut()
-//            } catch {
-//                print("Что то пошло не так!")
-//                print(error)
-//            }
-//            signOutButton.isEnabled = false
-//        }
-        
-//        func setupButton() {
-////
-//            view.backgroundColor = .systemBackground
-//            view.addSubview(signOutButton)
-//            signOutButton.translatesAutoresizingMaskIntoConstraints = false
-//
-//            signOutButton.configuration = .tinted()
-//            signOutButton.configuration?.title = "SignOutButton"
-//            signOutButton.configuration?.image = UIImage(systemName: "iphone")
-//            signOutButton.configuration?.imagePadding = 8
-//            signOutButton.configuration?.baseForegroundColor = .systemTeal
-//            signOutButton.configuration?.baseBackgroundColor = .systemTeal
-//            signOutButton.addTarget(self, action: #selector(didTapsignOutButton), for: .touchUpInside)
-//
-//
-//            NSLayoutConstraint.activate([signOutButton.centerXAnchor.constraint(equalTo: view.centerXAnchor), signOutButton.centerYAnchor.constraint(equalTo: view.centerYAnchor), signOutButton.heightAnchor.constraint(equalToConstant: 50), signOutButton.widthAnchor.constraint(equalToConstant: 280)])
-//        }
+

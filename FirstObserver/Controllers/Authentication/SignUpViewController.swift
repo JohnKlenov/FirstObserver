@@ -169,7 +169,7 @@ class SignUpViewController: UIViewController {
     
     private func registerUser(email: String?, password: String?, name: String?, completion: @escaping (AuthResult) -> Void) {
         
-        guard let email = emailTextField.text, Validators.isValidEmailAddr(strToValidate: email) else {
+        guard let email = email, Validators.isValidEmailAddr(strToValidate: email) else {
             completion(AuthResult.failure(AuthError.invalidEmail))
             return
         }

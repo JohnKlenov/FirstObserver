@@ -71,7 +71,7 @@ class HomeViewController: UIViewController {
     
     var ref: DatabaseReference!
     var storage:Storage!
-    
+    private var handle: AuthStateDidChangeListenerHandle?
     
     
     var arrayInArray = [String:Any]() {
@@ -105,21 +105,28 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //        if Auth.auth().currentUser == nil {
-        //            print("Auth.auth().currentUser == nil  Auth.auth().currentUser == nil  Auth.auth().currentUser == nil ")
-        ////            let refFBR = Database.database().reference().child("usersAccaunt")
-        //            let refFBR = Database.database().reference()
-        //            Auth.auth().signInAnonymously { (authResult, error) in
-        //                guard let user = authResult?.user else {return}
-        //                let uid = user.uid
-        //                refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":user.uid])
-        ////                refFBR.setValue(["uid":user.uid])
-        //            }
-        //        } else {
-        //
-        //            print("Auth.auth().currentUser?.uid - \(String(describing: Auth.auth().currentUser?.uid))")
-        //            print("user no null!")
-        //        }
+        // addStateDidChangeListener работает в режиме наблюдателя и постоянно делает запросы в сеть
+        // При слиянии anonymous user с permanent user Auth.auth().addStateDidChangeListener не срабатывает!
+        // signIn and signOut срабатывает!
+       handle = Auth.auth().addStateDidChangeListener { (auth, user) in
+//            print("%%%%%%% auth.currentUser?.isAnonymous - \(String(describing: auth.currentUser?.isAnonymous))")
+            print("%%%%%%% addStateDidChangeListener user?.isAnonymous - \(String(describing: user?.isAnonymous))")
+            if user == nil {
+                print("Auth.auth().currentUser == nil  Auth.auth().currentUser == nil  Auth.auth().currentUser == nil ")
+                self.addedToCardProducts = []
+                let refFBR = Database.database().reference()
+                Auth.auth().signInAnonymously { (authResult, error)
+                    in
+                    guard let user = authResult?.user else {return}
+                    print("create user anonymous - \(user.uid)")
+                    let uid = user.uid
+                    refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":user.uid])
+            }
+            } else {
+                print("addStateDidChangeListener user?.uid - \(String(describing: user?.uid))")
+                print("addStateDidChangeListener user no null!")
+            }
+        }
         
         self.tabBarController?.view.isUserInteractionEnabled = false
         activityContainerView.addSubview(loader)
@@ -142,26 +149,8 @@ class HomeViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        // addStateDidChangeListener работает в режиме наблюдателя и постоянно делает запросы в сеть
-        // При слиянии anonymous user с permanent user Auth.auth().addStateDidChangeListener не срабатывает!
-        // signIn and signOut срабатывает!
-        Auth.auth().addStateDidChangeListener { (auth, user) in
-            print("%%%%%%% auth.currentUser?.isAnonymous - \(String(describing: auth.currentUser?.isAnonymous))")
-            if auth.currentUser == nil {
-                print("Auth.auth().currentUser == nil  Auth.auth().currentUser == nil  Auth.auth().currentUser == nil ")
-                self.addedToCardProducts = []
-                let refFBR = Database.database().reference()
-                Auth.auth().signInAnonymously { (authResult, error) in
-                    guard let user = authResult?.user else {return}
-                    let uid = user.uid
-                    refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":user.uid])
-            }
-            } else {
-                print("Auth.auth().currentUser?.uid - \(String(describing: Auth.auth().currentUser?.uid))")
-                print("user no null!")
-            }
-        }
+    
+       
         
         ref.child("previewMalls").observe(.value) { [weak self] (snapshot) in
             var arrayMalls = [PreviewCategory]()
@@ -334,6 +323,11 @@ class HomeViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        
+//        if let handle = handle {
+//            Auth.auth().removeStateDidChangeListener(handle)
+//            print("viewWillDisappear - handle dead!!!")
+//        }
 //        ref.removeAllObservers()
         // отключить прослушиватель состояний
 //        Auth.auth().removeStateDidChangeListener(handle!)

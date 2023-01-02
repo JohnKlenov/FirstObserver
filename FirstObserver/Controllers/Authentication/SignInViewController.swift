@@ -243,9 +243,7 @@ class SignInViewController: UIViewController {
                     self?.isInvalidSignIn = true
                     print("что то пошло не так!!!")
                 }
-            }
-
-            if result?.user != nil {
+            } else {
                 self?.setContinueButton(enabled: true)
                 self?.button.setTitle("Continue", for: .normal)
                 self?.button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
@@ -256,6 +254,18 @@ class SignInViewController: UIViewController {
                 }
                 self?.presentingViewController?.dismiss(animated: true, completion: nil)
             }
+
+//            if result?.user != nil {
+//                self?.setContinueButton(enabled: true)
+//                self?.button.setTitle("Continue", for: .normal)
+//                self?.button.titleLabel?.font = UIFont.systemFont(ofSize: 20)
+//                self?.activityIndicator.stopAnimating()
+//                if let anonymusUser = anonymous {
+//                    print("delete anonymusUser \(anonymusUser) ")
+//                    self?.deleteAnonymusUSer(anonymusUser: anonymusUser)
+//                }
+//                self?.presentingViewController?.dismiss(animated: true, completion: nil)
+//            }
         }
     }
     

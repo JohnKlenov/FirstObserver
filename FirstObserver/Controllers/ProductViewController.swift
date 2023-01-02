@@ -64,7 +64,7 @@ class ProductViewController: UIViewController {
 //    var text = " "
     var onePercenteSAH: CGFloat!
     var frameSizeSA:CGSize!
-    var menu = Menu()
+//    var menu = Menu()
     let tapGestureRecognizer = UITapGestureRecognizer()
     var isSelectedAnnotation:Bool = false
     
@@ -72,7 +72,7 @@ class ProductViewController: UIViewController {
     
     // MARK: - NewModel -
     
-    var fireBaseModel:PopularProduct?
+   var fireBaseModel:PopularProduct?
     var arrayPin:[PlacesTest] = []
     var storage:Storage!
     var isAddedToCard: Bool = false
@@ -83,7 +83,7 @@ class ProductViewController: UIViewController {
     
     private lazy var ref: DatabaseReference? = {
         guard let uid = Auth.auth().currentUser?.uid else { return nil }
-        
+
         let ref = Database.database().reference(withPath: "usersAccaunt/\(uid)/AddedProducts")
         return ref
     }()
