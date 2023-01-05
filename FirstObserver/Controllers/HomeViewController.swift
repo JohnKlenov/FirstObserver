@@ -72,7 +72,7 @@ class HomeViewController: UIViewController {
     var ref: DatabaseReference!
     var storage:Storage!
     private var handle: AuthStateDidChangeListenerHandle?
-    
+//    var currentUser: User?
     
     var arrayInArray = [String:Any]() {
         didSet {
@@ -126,6 +126,56 @@ class HomeViewController: UIViewController {
                 print("addStateDidChangeListener user?.uid - \(String(describing: user?.uid))")
                 print("addStateDidChangeListener user no null!")
             }
+           
+           print("!!!!!!!! userId - \(String(describing: user?.uid)) @@@@@@@@@@")
+           self.ref.child("usersAccaunt/\(user?.uid ?? "")").observe(.value) { [weak self] (snapshot) in
+               for item in snapshot.children {
+                   let item = item as! DataSnapshot
+                   print("item - \(item.key)")
+                   switch item.key {
+                   case "AddedProducts":
+                       var arrayProduct = [PopularProduct]()
+                       
+                       for item in item.children {
+                           let product = item as! DataSnapshot
+                           
+                           var arrayMalls = [String]()
+                           var arrayRefe = [String]()
+                           
+                           
+                           for mass in product.children {
+                               let item = mass as! DataSnapshot
+                               
+                               switch item.key {
+                               case "malls":
+                                   for it in item.children {
+                                       let item = it as! DataSnapshot
+                                       if let refDictionary = item.value as? String {
+                                           arrayMalls.append(refDictionary)
+                                       }
+                                   }
+                                   
+                               case "refImage":
+                                   for it in item.children {
+                                       let item = it as! DataSnapshot
+                                       if let refDictionary = item.value as? String {
+                                           arrayRefe.append(refDictionary)
+                                       }
+                                   }
+                               default:
+                                   break
+                               }
+                               
+                           }
+                           let productModel = PopularProduct(snapshot: product, refArray: arrayRefe, malls: arrayMalls)
+                           arrayProduct.append(productModel)
+                       }
+                       self?.addedToCardProducts = arrayProduct
+                   default:
+                       break
+                   }
+               }
+           }
         }
         
         self.tabBarController?.view.isUserInteractionEnabled = false
@@ -233,56 +283,8 @@ class HomeViewController: UIViewController {
         }
         
         
-        let userId = Auth.auth().currentUser?.uid
-        print("!!!!!!!! userId - \(String(describing: userId)) @@@@@@@@@@")
-        ref.child("usersAccaunt/\(userId ?? "")").observe(.value) { [weak self] (snapshot) in
-            for item in snapshot.children {
-                let item = item as! DataSnapshot
-                print("item - \(item.key)")
-                switch item.key {
-                case "AddedProducts":
-                    var arrayProduct = [PopularProduct]()
-                    
-                    for item in item.children {
-                        let product = item as! DataSnapshot
-                        
-                        var arrayMalls = [String]()
-                        var arrayRefe = [String]()
-                        
-                        
-                        for mass in product.children {
-                            let item = mass as! DataSnapshot
-                            
-                            switch item.key {
-                            case "malls":
-                                for it in item.children {
-                                    let item = it as! DataSnapshot
-                                    if let refDictionary = item.value as? String {
-                                        arrayMalls.append(refDictionary)
-                                    }
-                                }
-                                
-                            case "refImage":
-                                for it in item.children {
-                                    let item = it as! DataSnapshot
-                                    if let refDictionary = item.value as? String {
-                                        arrayRefe.append(refDictionary)
-                                    }
-                                }
-                            default:
-                                break
-                            }
-                            
-                        }
-                        let productModel = PopularProduct(snapshot: product, refArray: arrayRefe, malls: arrayMalls)
-                        arrayProduct.append(productModel)
-                    }
-                    self?.addedToCardProducts = arrayProduct
-                default:
-                    break
-                }
-            }
-        }
+        
+
         removeTopView()
     }
     

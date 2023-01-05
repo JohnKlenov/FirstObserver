@@ -8,6 +8,13 @@
 import UIKit
 import FirebaseAuth
 import Firebase
+import Foundation
+
+@objc protocol SignUpViewControllerDelegate: AnyObject {
+    @objc optional func saveRemuveCartProductFB()
+    @objc optional func anonymousUserDidRegistered()
+    
+}
 
 class SignUpViewController: UIViewController {
     
@@ -34,7 +41,7 @@ class SignUpViewController: UIViewController {
     let activityIndicator = UIActivityIndicatorView(style: .medium)
     var buttonCenter: CGPoint!
     var isFlag = false
-    weak var delegate: SaveRemuveCartProductSIVCDelegate?
+    weak var delegate: SignUpViewControllerDelegate?
     var isInvalidSignIn:Bool = false
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -162,6 +169,9 @@ class SignUpViewController: UIViewController {
                 if error != nil {
                     print("createProfileChangeRequest return error!!!")
                     callBack?(error)
+                } else {
+                    // configure profile success
+                    self.delegate?.anonymousUserDidRegistered?()
                 }
             }
         }
@@ -180,33 +190,38 @@ class SignUpViewController: UIViewController {
         }
         
         guard let user = Auth.auth().currentUser else {
+            // return error in completion
             return
         }
         
         if user.isAnonymous {
             
             if isInvalidSignIn {
-                delegate?.saveRemuveCartProductFB()
+                delegate?.saveRemuveCartProductFB?()
             }
            
             let credential = EmailAuthProvider.credential(withEmail: email, password: password)
             user.link(with: credential, completion: { (result, error) in
 
                 guard error == nil else {
+                    // return error
                     return
                 }
                 
                 guard let user = result?.user else {
+                    // return error
                     return
                 }
                 
-                self.createProfileChangeRequest(name: name)
+                self.createProfileChangeRequest(name: name, photoURL: nil) { error in
+                    self.delegate?.anonymousUserDidRegistered?()                }
                 
                 let uid = user.uid
                 let refFBR = Database.database().reference()
                 refFBR.child("usersAccaunt/\(uid)").updateChildValues(["uidPermanent":user.uid])
                 refFBR.child("usersAccaunt/\(uid)/uidAnonymous").setValue(nil)
                 self.verificationEmail()
+                completion(.success)
             })
             
             
@@ -227,10 +242,11 @@ class SignUpViewController: UIViewController {
                 let refFBR = Database.database().reference()
                 refFBR.child("usersAccaunt/\(uid)").setValue(["uidPermanent":user.uid])
                 self.verificationEmail()
+                completion(.success)
             }
             
         }
-        completion(.success)
+//        completion(.success)
     }
     
     // Отправить пользователю электронное письмо с подтверждением регистрации

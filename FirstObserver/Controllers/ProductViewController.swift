@@ -13,7 +13,7 @@ import FirebaseAuth
 import Firebase
 
 
-protocol AddedToCardProductsPVCDelegate: AnyObject {
+protocol ProductViewControllerDelegate: AnyObject {
     func allProductsToCard(completionHandler: ([PopularProduct]) -> Void)
 }
 
@@ -378,7 +378,7 @@ class ProductViewController: UIViewController {
         
         if segue.identifier == "signInVC" {
             let destination = segue.destination as! SignInViewController
-            destination.delegate = self
+            destination.productDelegate = self
         }
     }
     
@@ -594,7 +594,7 @@ extension ProductViewController: MKMapViewDelegate {
 
 }
 
-extension ProductViewController: AddedToCardProductsPVCDelegate {
+extension ProductViewController: ProductViewControllerDelegate {
   
     func allProductsToCard(completionHandler: ([PopularProduct]) -> Void) {
         

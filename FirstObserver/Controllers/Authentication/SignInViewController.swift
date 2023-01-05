@@ -9,8 +9,10 @@ import UIKit
 import FirebaseAuth
 import Firebase
 
-protocol SaveRemuveCartProductSIVCDelegate: AnyObject {
-    func saveRemuveCartProductFB()
+
+
+protocol SignInViewControllerDelegate : AnyObject {
+    func userIsPermanent()
 }
 
 class SignInViewController: UIViewController {
@@ -39,19 +41,17 @@ class SignInViewController: UIViewController {
     
     let tapGestureRecognizer = UITapGestureRecognizer()
     
-    var addedInCartProducts: [PopularProduct] = []
+    var addedToCardProducts: [PopularProduct] = []
     private let encoder = JSONEncoder()
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
     
-    weak var delegate: AddedToCardProductsPVCDelegate?
-    
+    weak var productDelegate: ProductViewControllerDelegate?
     var isInvalidSignIn:Bool = false
-    
     var currentUser: User?
-    
+    weak var profileDelegate:SignInViewControllerDelegate?
     
     
     
@@ -78,9 +78,11 @@ class SignInViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        delegate?.allProductsToCard(completionHandler: { (deleteCartProducts) in
-            addedInCartProducts = deleteCartProducts
+        productDelegate?.allProductsToCard(completionHandler: { (deleteCartProducts) in
+            addedToCardProducts = deleteCartProducts
         })
+        
+        print("SignInViewController viewWillAppear addedToCardProducts - \(addedToCardProducts)")
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -118,7 +120,6 @@ class SignInViewController: UIViewController {
                 vc.delegate = self
                 vc.isInvalidSignIn = isInvalidSignIn
             }
-            
         }
     }
     
@@ -414,7 +415,7 @@ extension UITextField {
     }
 }
 
-extension SignInViewController: SaveRemuveCartProductSIVCDelegate {
+extension SignInViewController: SignUpViewControllerDelegate {
     
     func saveRemuveCartProductFB() {
        
@@ -425,7 +426,7 @@ extension SignInViewController: SaveRemuveCartProductSIVCDelegate {
             refFBR.child("usersAccaunt/\(uid)").setValue(["uidAnonymous":uid])
             var removeCartProduct: [String:AddedProduct] = [:]
 
-            addedInCartProducts.forEach { (cartProduct) in
+            addedToCardProducts.forEach { (cartProduct) in
                 let productEncode = AddedProduct(product: cartProduct)
                 print("cartProduct - \(productEncode)")
                 removeCartProduct[cartProduct.model] = productEncode
@@ -446,4 +447,8 @@ extension SignInViewController: SaveRemuveCartProductSIVCDelegate {
     }
     
     
+    func anonymousUserDidRegistered() {
+        print("anonymousUserDidRegistered anonymousUserDidRegistered anonymousUserDidRegistered")
+        profileDelegate?.userIsPermanent()
+    }
 }
