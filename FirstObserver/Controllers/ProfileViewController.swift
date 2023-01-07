@@ -35,19 +35,22 @@ import FirebaseStorageUI
         var currentUser: User?
         var addedToCardProducts: [PopularProduct] = []
         var isEditButton = true
-        var isTimer = false {
-            didSet {
-                editOrDoneButton.setNeedsUpdateConfiguration()
-            }
-        }
+//        var isTimer = false {
+//            didSet {
+//                editOrDoneButton.setNeedsUpdateConfiguration()
+//            }
+//        }
 
         private let encoder = JSONEncoder()
         private let tapGestureRecognizer = UITapGestureRecognizer()
-        
+        private var imageIsChanged = false
+        private var storage:Storage!
+        private var imageData: Data?
         
         override func viewDidLoad() {
             super.viewDidLoad()
            
+            storage = Storage.storage()
             Auth.auth().addStateDidChangeListener { (auth, user) in
             self.currentUser = user
 
@@ -69,9 +72,33 @@ import FirebaseStorageUI
             imageUser.addGestureRecognizer(tapGestureRecognizer)
         }
         
-        @objc func handleTapSingleGesture() {
-            print("Did tap handleTapSingleGesture")
+        private func setupAlertAddImageAvatar() {
+            
+            let alert = UIAlertController(title: "Add image to avatar", message: nil, preferredStyle: .actionSheet)
+            alert.overrideUserInterfaceStyle = .dark
+            
+            let camera = UIAlertAction(title: "Camera", style: .default) { action in
+                self.chooseImagePicker(source: .camera)
+            }
+            
+            let gallery = UIAlertAction(title: "Gallery", style: .default) { action in
+                self.chooseImagePicker(source: .photoLibrary)
+            }
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .cancel) { action in
+            }
+            
+            alert.addAction(camera)
+            alert.addAction(gallery)
+            alert.addAction(cancel)
+            present(alert, animated: true, completion: nil)
+            
         }
+        
+        @objc func handleTapSingleGesture() {
+            setupAlertAddImageAvatar()
+        }
+        
         
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
@@ -97,35 +124,56 @@ import FirebaseStorageUI
                 stateEditSaveButton(isSwitch: isEditButton)
             } else {
                 
-                editOrDoneButton.configurationUpdateHandler = { button in
-                    var config = button.configuration
-                    config?.showsActivityIndicator = self.isTimer
-                    config?.title = self.isTimer ? "" : "Edit"
-                    button.isUserInteractionEnabled = !self.isTimer
-                    button.configuration = config
-                    if !self.isTimer {
-                        self.editOrDoneButton.configurationUpdateHandler = nil
-                    }
-                }
-                isTimer = true
+//                editOrDoneButton.configurationUpdateHandler = { button in
+//                    var config = button.configuration
+//                    config?.showsActivityIndicator = self.isTimer
+//                    config?.title = self.isTimer ? "" : "Edit"
+//                    print("editOrDoneButton.configurationUpdateHandler")
+//                    button.isUserInteractionEnabled = !self.isTimer
+//                    button.configuration = config
+//                    if !self.isTimer {
+//                        self.editOrDoneButton.configurationUpdateHandler = nil
+//                    }
+//                }
+//                isTimer = true
+                editOrDoneButton.configuration?.title = ""
+                editOrDoneButton.configuration?.showsActivityIndicator = true
+                editOrDoneButton.isUserInteractionEnabled = false
+                print("isTimer = true")
                 // проверка email and name на validation neaded
-                updateProfileInfo(withImage: nil, name: userNameTextField.text != currentUser?.displayName ? userNameTextField.text : nil , email: emailUserTextField.text != currentUser?.email ? emailUserTextField.text : nil) { error in
+                // зачем нам тут проверка email и name если мы это делаем в didChangeTextField?
+                // email мы уже not edit
+                
+                let image = imageIsChanged ? imageData : nil
+                
+//                let imageData = image?.pngData()
+                
+                updateProfileInfo(withImage: image, name: userNameTextField.text != currentUser?.displayName ? userNameTextField.text : nil) { error in
                     if error != nil {
+                        // тут нужно отлавливать ошибку пришедшую из name и image
                         print("\(String(describing: error))")
                         if let error = error as NSError? {
                             self.editOrDoneButton.configuration?.showsActivityIndicator = false
-                            self.editOrDoneButton.configurationUpdateHandler = nil
+//                            self.editOrDoneButton.configurationUpdateHandler = nil
                             self.switchSaveButton(isSwitch: false)
                             self.setupAlert(title: "Error", message: error.localizedDescription)
                         }
                     } else {
-                        self.isTimer = false
+                        
+//                        self.isTimer = false
+//                        print("self.isTimer = false")
+                        self.editOrDoneButton.configuration?.showsActivityIndicator = false
                         self.stateEditSaveButton(isSwitch: self.isEditButton)
                         self.setupAlert(title: "Success", message: "Data changed!")
+                        self.imageIsChanged = false
                     }
                     
                 }
             }
+        }
+        
+        func fetchDataImage() {
+            
         }
                 
         
@@ -133,11 +181,12 @@ import FirebaseStorageUI
         @IBAction func didTapCancel(_ sender: UIButton) {
             
             cancelButton.isHidden = true
-            emailUserTextField.text = currentUser?.email
+//            emailUserTextField.text = currentUser?.email
             userNameTextField.text = currentUser?.displayName
             switchEditButton(isSwitch: true)
             userNameTextField.isUserInteractionEnabled = false
-            emailUserTextField.isUserInteractionEnabled = false
+//            emailUserTextField.isUserInteractionEnabled = false
+            imageUser.isUserInteractionEnabled = false
             isEditButton = !isEditButton
             }
         
@@ -330,8 +379,26 @@ import FirebaseStorageUI
             cancelButton.isHidden = true
             userNameTextField.isUserInteractionEnabled = false
             emailUserTextField.isUserInteractionEnabled = false
+            imageUser.isUserInteractionEnabled = false
+            
             signOutButton.isHidden = false
             deleteAccountButton.isHidden = false
+            if let photoURL = user.photoURL {
+                print("get photoURL from profile")
+                let urlString = photoURL.absoluteString
+                let urlRef = storage.reference(forURL: urlString)
+//                imageUser.sd_setImage(with:urlRef, placeholderImage: UIImage(named: "DefaultImage"))
+                imageUser.sd_setImage(with: urlRef, maxImageSize: 3602*10630, placeholderImage: UIImage(named: "DefaultImage"), options: .refreshCached) { (image, error, cashType, storageRef) in
+                    
+                    if error != nil {
+                        print("\(String(describing: error?.localizedDescription))")
+                    } else {
+                        self.imageUser.image = image
+                    }
+                }
+            } else {
+                imageUser.image = UIImage(named: "DefaultImage")
+            }
         }
         
         private func currentUserIsAnonymous() {
@@ -339,6 +406,8 @@ import FirebaseStorageUI
             cancelButton.isHidden = true
             userNameTextField.text = "User is anonymous"
             userNameTextField.isUserInteractionEnabled = false
+            imageUser.image = UIImage(named: "DefaultImage")
+            imageUser.isUserInteractionEnabled = false
             emailUserTextField.isHidden = true
             signInSignUp.isHidden = false
             signOutButton.configuration?.showsActivityIndicator = false
@@ -354,6 +423,7 @@ import FirebaseStorageUI
         }
         
         private func isValidTextField(comletion: (Bool) -> Void) {
+            // logic valid email need not
             guard let email = emailUserTextField.text, let name = userNameTextField.text, let emailUser = currentUser?.email else { return }
             let isValid = (!(email.isEmpty) && email != emailUser) || (!(name.isEmpty) && name != currentUser?.displayName)
             comletion(isValid)
@@ -374,23 +444,47 @@ import FirebaseStorageUI
             editOrDoneButton.configuration = configButton
         }
         
+        // зачем при первом нажатии на edit switchSaveButton(isSwitch: isSwitch)?
+        //
+        
+        // жмем save(сохраняем имя) -> edit в цвете
+        // isTimer = true -> появляется спинер
+        // self.isTimer = false но editOrDoneButton.configurationUpdateHandler не сработал
+        // stateEditSaveButton(isSwitch: Bool) - получает flase
+        // switchEditButton(isSwitch: Bool) -> делает "Edit" .lightGray
+        // .switchSaveButton(isSwitch: !isSwitch) получает true -> "Save", .systemPurple, isUserInteractionEnabled = isSwitch ? true
+        // editOrDoneButton.configurationUpdateHandler -> срабатывает и делает  "Edit" и isUserInteractionEnabled = isSwitch ? true
+        // последний раз он был в цвете по этомы мы получаем кнопку "Edit" .systemPurple isUserInteractionEnabled = true
         private func stateEditSaveButton(isSwitch: Bool) {
-           
-            isSwitch ? switchSaveButton(isSwitch: isSwitch) : switchEditButton(isSwitch: isSwitch)
-            self.switchSaveButton(isSwitch: !isSwitch)
-            self.cancelButton.isHidden = !isSwitch
-            self.emailUserTextField.isUserInteractionEnabled = !isSwitch
-            self.userNameTextField.isUserInteractionEnabled = isSwitch
-            self.isEditButton = !isSwitch
+//           print("stateEditSaveButton(isSwitch: Bool)")
+//            isSwitch ? switchSaveButton(isSwitch: isSwitch) : switchEditButton(isSwitch: isSwitch)
+//            print("stateEditSaveButton(isSwitch: Bool) + self.switchSaveButton(isSwitch: !isSwitch)")
+//            self.switchSaveButton(isSwitch: !isSwitch)
+//            self.cancelButton.isHidden = !isSwitch
+////            self.emailUserTextField.isUserInteractionEnabled = !isSwitch
+//            self.userNameTextField.isUserInteractionEnabled = isSwitch
+//            self.imageUser.isUserInteractionEnabled = isSwitch
+//            self.isEditButton = !isSwitch
+            print("stateEditSaveButton(isSwitch: Bool)")
+             isSwitch ? switchSaveButton(isSwitch: !isSwitch) : switchEditButton(isSwitch: !isSwitch)
+             print("stateEditSaveButton(isSwitch: Bool) + self.switchSaveButton(isSwitch: !isSwitch)")
+//             self.switchSaveButton(isSwitch: !isSwitch)
+             self.cancelButton.isHidden = !isSwitch
+ //            self.emailUserTextField.isUserInteractionEnabled = !isSwitch
+             self.userNameTextField.isUserInteractionEnabled = isSwitch
+             self.imageUser.isUserInteractionEnabled = isSwitch
+             self.isEditButton = !isSwitch
         }
         
         private func switchSaveButton(isSwitch: Bool) {
             editOrDoneButton.configuration?.title = "Save"
+            print("switchSaveButton @@@@@@@@@@@@@@@@@@")
             editOrDoneButton.configuration?.baseForegroundColor = isSwitch ? .systemPurple : .lightGray
             editOrDoneButton.isUserInteractionEnabled = isSwitch ? true : false
         }
         
         private func switchEditButton(isSwitch: Bool) {
+            print("switchEditButton(isSwitch: Bool) ")
             editOrDoneButton.configuration?.title = "Edit"
             editOrDoneButton.configuration?.baseForegroundColor = isSwitch ? .systemPurple : .lightGray
             editOrDoneButton.isUserInteractionEnabled = isSwitch ? true : false
@@ -490,6 +584,8 @@ import FirebaseStorageUI
                 return
             }
 
+            // мы можем маркировать ошбки пришедшие из image или из name
+            // error image -> любая -> delete imageView устаавливаем defaultImage, imageIsChanged = false, switchSaveButton(isSwitch: false)
             if let image = image{
                 let profileImgReference = Storage.storage().reference().child("profile_pictures").child("\(user.uid).png")
 
@@ -539,23 +635,31 @@ extension ProfileViewController: SignInViewControllerDelegate {
         self.currentUserisPermanent(user)
     }
 }
+
+extension ProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    func chooseImagePicker(source:UIImagePickerController.SourceType) {
+        
+        if UIImagePickerController.isSourceTypeAvailable(source) {
+            let imagePicker = UIImagePickerController()
+            imagePicker.delegate = self
+            imagePicker.allowsEditing = true
+            imagePicker.sourceType = source
+            present(imagePicker, animated: true, completion: nil)
+        }
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        imageUser.image = info[.editedImage] as? UIImage
+        imageUser.contentMode = .scaleAspectFill
+        imageUser.clipsToBounds = true
+        switchSaveButton(isSwitch: true)
+        imageData = (info[.editedImage] as? UIImage)?.pngData()
+        imageIsChanged = true
+        dismiss(animated: true, completion: nil)
+        
+    }
+}
         
 
-
-//        var handle: AuthStateDidChangeListenerHandle?
-
-//            if let user = Auth.auth().currentUser {
-//                for profile in user.providerData {
-//                    // Id of the provider (ex: facebook.com)
-//                    let providerID = profile.providerID
-//                    print("providerID - \(providerID)")
-//                  }
-//                } else {
-//                    print("No user is signed in.")
-//                  // No user is signed in.
-//                }
-//            print("currentUser?.uid - \(currentUser?.uid)")
-//            currentUser?.getIDTokenForcingRefresh(true, completion: { (str, error) in
-//                //
-//            })
             

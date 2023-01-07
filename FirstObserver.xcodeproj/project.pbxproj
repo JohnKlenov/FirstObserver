@@ -56,6 +56,7 @@
 		5E8DC52C28D9F37C00275138 /* CustomMapViewProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8DC52B28D9F37C00275138 /* CustomMapViewProduct.swift */; };
 		5E9101DC291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9101DB291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift */; };
 		5E9101DF291CFE4B00D37E92 /* ChildCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9101DE291CFE4B00D37E92 /* ChildCollectionViewController.swift */; };
+		5E9DF45D2968A425006544F9 /* UIView + extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9DF45C2968A425006544F9 /* UIView + extension.swift */; };
 		5EA9446E294B0522007C2AB5 /* Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9446D294B0522007C2AB5 /* Alerts.swift */; };
 		5EA94471294B5773007C2AB5 /* AlertTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA94470294B5773007C2AB5 /* AlertTopView.swift */; };
 		5EBD49A729449F6C00E27F2F /* AlertText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EBD49A629449F6C00E27F2F /* AlertText.swift */; };
@@ -116,6 +117,7 @@
 		5E8DC52B28D9F37C00275138 /* CustomMapViewProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMapViewProduct.swift; sourceTree = "<group>"; };
 		5E9101DB291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageMallCollectionViewCell.swift; sourceTree = "<group>"; };
 		5E9101DE291CFE4B00D37E92 /* ChildCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildCollectionViewController.swift; sourceTree = "<group>"; };
+		5E9DF45C2968A425006544F9 /* UIView + extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView + extension.swift"; sourceTree = "<group>"; };
 		5EA9446D294B0522007C2AB5 /* Alerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alerts.swift; sourceTree = "<group>"; };
 		5EA94470294B5773007C2AB5 /* AlertTopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertTopView.swift; sourceTree = "<group>"; };
 		5EBD49A629449F6C00E27F2F /* AlertText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertText.swift; sourceTree = "<group>"; };
@@ -190,6 +192,7 @@
 				5E74BCC928EEF2F60048D097 /* AuthError.swift */,
 				5EBD49A629449F6C00E27F2F /* AlertText.swift */,
 				5EA9446D294B0522007C2AB5 /* Alerts.swift */,
+				5E9DF45C2968A425006544F9 /* UIView + extension.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -530,6 +533,7 @@
 				5E7C7E2F29196BF200AC57CB /* MallViewController.swift in Sources */,
 				5E8DC52C28D9F37C00275138 /* CustomMapViewProduct.swift in Sources */,
 				5E7EF56128A12DBB00814F4D /* SceneDelegate.swift in Sources */,
+				5E9DF45D2968A425006544F9 /* UIView + extension.swift in Sources */,
 				5E7EF57328A13B6300814F4D /* HomeViewController.swift in Sources */,
 				5E139C5E28C4C9E8004F963D /* CartTableViewCell.swift in Sources */,
 				5E139C5828C1FAB7004F963D /* CatalogCollectionViewCell.swift in Sources */,
