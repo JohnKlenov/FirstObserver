@@ -46,12 +46,15 @@ import FirebaseStorageUI
         private var imageIsChanged = false
         private var storage:Storage!
         private var imageData: Data?
+        var urlRefDelete: StorageReference?
+        var imageReturn: UIImage?
         
         override func viewDidLoad() {
             super.viewDidLoad()
            
             storage = Storage.storage()
             Auth.auth().addStateDidChangeListener { (auth, user) in
+                print("Get User - \(user?.uid)")
             self.currentUser = user
 
             if let user = user, !user.isAnonymous {
@@ -72,31 +75,10 @@ import FirebaseStorageUI
             imageUser.addGestureRecognizer(tapGestureRecognizer)
         }
         
-        private func setupAlertAddImageAvatar() {
-            
-            let alert = UIAlertController(title: "Add image to avatar", message: nil, preferredStyle: .actionSheet)
-            alert.overrideUserInterfaceStyle = .dark
-            
-            let camera = UIAlertAction(title: "Camera", style: .default) { action in
-                self.chooseImagePicker(source: .camera)
-            }
-            
-            let gallery = UIAlertAction(title: "Gallery", style: .default) { action in
-                self.chooseImagePicker(source: .photoLibrary)
-            }
-            
-            let cancel = UIAlertAction(title: "Cancel", style: .cancel) { action in
-            }
-            
-            alert.addAction(camera)
-            alert.addAction(gallery)
-            alert.addAction(cancel)
-            present(alert, animated: true, completion: nil)
-            
-        }
+       
         
         @objc func handleTapSingleGesture() {
-            setupAlertAddImageAvatar()
+            setupAlertEditImageAvatar()
         }
         
         
@@ -146,8 +128,6 @@ import FirebaseStorageUI
                 
                 let image = imageIsChanged ? imageData : nil
                 
-//                let imageData = image?.pngData()
-                
                 updateProfileInfo(withImage: image, name: userNameTextField.text != currentUser?.displayName ? userNameTextField.text : nil) { error in
                     if error != nil {
                         // тут нужно отлавливать ошибку пришедшую из name и image
@@ -159,6 +139,8 @@ import FirebaseStorageUI
                             self.setupAlert(title: "Error", message: error.localizedDescription)
                         }
                     } else {
+                      
+                        // тут  мы удаляем прошлую аватар по урлу
                         
 //                        self.isTimer = false
 //                        print("self.isTimer = false")
@@ -180,6 +162,12 @@ import FirebaseStorageUI
 
         @IBAction func didTapCancel(_ sender: UIButton) {
             
+            if imageIsChanged {
+                imageData = nil
+                imageUser.image = imageReturn
+                imageIsChanged = false
+                imageReturn = nil
+            }
             cancelButton.isHidden = true
 //            emailUserTextField.text = currentUser?.email
             userNameTextField.text = currentUser?.displayName
@@ -266,6 +254,78 @@ import FirebaseStorageUI
 
         
         // MARK: - Alerts -
+        
+        private func startDeleteRefImageUpdateUI() {
+            editOrDoneButton.configuration?.title = ""
+            editOrDoneButton.configuration?.showsActivityIndicator = true
+            editOrDoneButton.isUserInteractionEnabled = false
+        }
+        
+        private func endDeleteRefImageUpdateUI() {
+            self.editOrDoneButton.configuration?.showsActivityIndicator = false
+            self.stateEditSaveButton(isSwitch: self.isEditButton)
+            self.setupAlert(title: "Success", message: "Profile avatar is delete!")
+            self.imageIsChanged = false
+        }
+        
+        private func errorDeleteRefImageUpdateUI(error:NSError) {
+            self.editOrDoneButton.configuration?.showsActivityIndicator = false
+            self.switchSaveButton(isSwitch: false)
+            self.setupAlert(title: "Failed to delete profile avatar", message: error.localizedDescription)
+        }
+        
+        
+        private func setupAlertEditImageAvatar() {
+            
+            let alert = UIAlertController(title: "", message: nil, preferredStyle: .actionSheet)
+            alert.overrideUserInterfaceStyle = .dark
+            
+            let camera = UIAlertAction(title: "Camera", style: .default) { action in
+                self.chooseImagePicker(source: .camera)
+            }
+            
+            let gallery = UIAlertAction(title: "Gallery", style: .default) { action in
+                self.chooseImagePicker(source: .photoLibrary)
+            }
+            
+            let cancel = UIAlertAction(title: "Cancel", style: .cancel) { action in
+            }
+            
+            let deleteAvatar = UIAlertAction(title: "Delete Avatar", style: .destructive) { action in
+                self.startDeleteRefImageUpdateUI()
+                self.urlRefDelete?.delete(completion: { error in
+                    if error == nil {
+                        self.urlRefDelete = nil
+                        self.resetProfileChangeRequest(reset: .photoURL) { error in
+                            print("self.resetProfileChangeRequest(reset: .photoURL) - \(String(describing: error?.localizedDescription))")
+                        }
+                        self.endDeleteRefImageUpdateUI()
+                        self.imageUser.image = UIImage(named: "DefaultImage")
+                        print("storageImage delete")
+                    } else {
+                        if let error = error as NSError? {
+                            self.errorDeleteRefImageUpdateUI(error: error)
+                            
+                        }
+                        
+                    }
+                })
+            }
+            
+            let titleAlertController = NSAttributedString(string: "Add image to avatar", attributes: [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 17)])
+            alert.setValue(titleAlertController, forKey: "attributedTitle")
+            
+            
+            alert.addAction(camera)
+            alert.addAction(gallery)
+            alert.addAction(cancel)
+            
+            if let _ = urlRefDelete, imageIsChanged == false {
+                alert.addAction(deleteAvatar)
+            }
+            present(alert, animated: true, completion: nil)
+            
+        }
         
         // Log in again before retrying this request
         private func setupAlertRecentLogin(title:String, message:String, placeholder: String, completionHandler: @escaping (String) -> Void ) {
@@ -383,22 +443,38 @@ import FirebaseStorageUI
             
             signOutButton.isHidden = false
             deleteAccountButton.isHidden = false
-            if let photoURL = user.photoURL {
-                print("get photoURL from profile")
-                let urlString = photoURL.absoluteString
-                let urlRef = storage.reference(forURL: urlString)
-//                imageUser.sd_setImage(with:urlRef, placeholderImage: UIImage(named: "DefaultImage"))
+            if let photoURL = user.photoURL?.absoluteString {
+                
+                let urlRef = storage.reference(forURL: photoURL)
                 imageUser.sd_setImage(with: urlRef, maxImageSize: 3602*10630, placeholderImage: UIImage(named: "DefaultImage"), options: .refreshCached) { (image, error, cashType, storageRef) in
-                    
+                    print("self.urlRefDelete = storageRef - \(storageRef.fullPath)")
+                    self.urlRefDelete = storageRef
                     if error != nil {
-                        print("\(String(describing: error?.localizedDescription))")
+                        print("imageUser.sd_setImage - \(String(describing: error?.localizedDescription))")
+                        self.imageUser.image = UIImage(named: "DefaultImage")
                     } else {
                         self.imageUser.image = image
+                        
                     }
                 }
             } else {
-                imageUser.image = UIImage(named: "DefaultImage")
+                self.imageUser.image = UIImage(named: "DefaultImage")
+                print("not photoURL not photoURL not photoURL not photoURL")
             }
+//            let urlRef = storage.reference(forURL: user.photoURL?.absoluteString ?? "")
+            
+//            imageUser.sd_setImage(with: urlRef, maxImageSize: 3602*10630, placeholderImage: UIImage(named: "DefaultImage"), options: .refreshCached) { (image, error, cashType, storageRef) in
+//                print("self.urlRefDelete = storageRef - \(storageRef.fullPath)")
+//                self.urlRefDelete = storageRef
+//                if error != nil {
+//                    print("imageUser.sd_setImage - \(String(describing: error?.localizedDescription))")
+//                    self.imageUser.image = UIImage(named: "DefaultImage")
+//                } else {
+//                    self.imageUser.image = image
+//
+//                }
+//            }
+            
         }
         
         private func currentUserIsAnonymous() {
@@ -430,7 +506,6 @@ import FirebaseStorageUI
         }
         
         private func configureButton() {
-            print("configureButton")
             var configButton = UIButton.Configuration.plain()
             configButton.title = "Edit"
             configButton.baseForegroundColor = .systemPurple
@@ -444,33 +519,9 @@ import FirebaseStorageUI
             editOrDoneButton.configuration = configButton
         }
         
-        // зачем при первом нажатии на edit switchSaveButton(isSwitch: isSwitch)?
-        //
-        
-        // жмем save(сохраняем имя) -> edit в цвете
-        // isTimer = true -> появляется спинер
-        // self.isTimer = false но editOrDoneButton.configurationUpdateHandler не сработал
-        // stateEditSaveButton(isSwitch: Bool) - получает flase
-        // switchEditButton(isSwitch: Bool) -> делает "Edit" .lightGray
-        // .switchSaveButton(isSwitch: !isSwitch) получает true -> "Save", .systemPurple, isUserInteractionEnabled = isSwitch ? true
-        // editOrDoneButton.configurationUpdateHandler -> срабатывает и делает  "Edit" и isUserInteractionEnabled = isSwitch ? true
-        // последний раз он был в цвете по этомы мы получаем кнопку "Edit" .systemPurple isUserInteractionEnabled = true
         private func stateEditSaveButton(isSwitch: Bool) {
-//           print("stateEditSaveButton(isSwitch: Bool)")
-//            isSwitch ? switchSaveButton(isSwitch: isSwitch) : switchEditButton(isSwitch: isSwitch)
-//            print("stateEditSaveButton(isSwitch: Bool) + self.switchSaveButton(isSwitch: !isSwitch)")
-//            self.switchSaveButton(isSwitch: !isSwitch)
-//            self.cancelButton.isHidden = !isSwitch
-////            self.emailUserTextField.isUserInteractionEnabled = !isSwitch
-//            self.userNameTextField.isUserInteractionEnabled = isSwitch
-//            self.imageUser.isUserInteractionEnabled = isSwitch
-//            self.isEditButton = !isSwitch
-            print("stateEditSaveButton(isSwitch: Bool)")
              isSwitch ? switchSaveButton(isSwitch: !isSwitch) : switchEditButton(isSwitch: !isSwitch)
-             print("stateEditSaveButton(isSwitch: Bool) + self.switchSaveButton(isSwitch: !isSwitch)")
-//             self.switchSaveButton(isSwitch: !isSwitch)
              self.cancelButton.isHidden = !isSwitch
- //            self.emailUserTextField.isUserInteractionEnabled = !isSwitch
              self.userNameTextField.isUserInteractionEnabled = isSwitch
              self.imageUser.isUserInteractionEnabled = isSwitch
              self.isEditButton = !isSwitch
@@ -478,13 +529,11 @@ import FirebaseStorageUI
         
         private func switchSaveButton(isSwitch: Bool) {
             editOrDoneButton.configuration?.title = "Save"
-            print("switchSaveButton @@@@@@@@@@@@@@@@@@")
             editOrDoneButton.configuration?.baseForegroundColor = isSwitch ? .systemPurple : .lightGray
             editOrDoneButton.isUserInteractionEnabled = isSwitch ? true : false
         }
         
         private func switchEditButton(isSwitch: Bool) {
-            print("switchEditButton(isSwitch: Bool) ")
             editOrDoneButton.configuration?.title = "Edit"
             editOrDoneButton.configuration?.baseForegroundColor = isSwitch ? .systemPurple : .lightGray
             editOrDoneButton.isUserInteractionEnabled = isSwitch ? true : false
@@ -504,7 +553,6 @@ import FirebaseStorageUI
                 if let nc = vc as? UINavigationController {
                     if let homeVC = nc.topViewController as? HomeViewController {
                         self.addedToCardProducts = homeVC.addedToCardProducts
-                        print("getFetchDataHVC -  \(addedToCardProducts)")
                     }
                 }
             }
@@ -536,6 +584,28 @@ import FirebaseStorageUI
                     request.photoURL = photoURL
                 }
                 
+                request.commitChanges { error in
+                    callBack?(error)
+                }
+            }
+        }
+        
+        enum ResetProfile {
+            case name
+            case photoURL
+        }
+        
+        private func resetProfileChangeRequest(reset: ResetProfile,_ callBack: ((Error?) -> Void)? = nil) {
+            
+            if let request = Auth.auth().currentUser?.createProfileChangeRequest() {
+                
+                switch reset {
+                    
+                case .name:
+                    request.displayName = nil
+                case .photoURL:
+                    request.photoURL = nil
+                }
                 request.commitChanges { error in
                     callBack?(error)
                 }
@@ -587,23 +657,20 @@ import FirebaseStorageUI
             // мы можем маркировать ошбки пришедшие из image или из name
             // error image -> любая -> delete imageView устаавливаем defaultImage, imageIsChanged = false, switchSaveButton(isSwitch: false)
             if let image = image{
-                let profileImgReference = Storage.storage().reference().child("profile_pictures").child("\(user.uid).png")
-
+                let profileImgReference = Storage.storage().reference().child("profile_pictures").child("\(user.uid).jpeg")
                 _ = profileImgReference.putData(image, metadata: nil) { (metadata, error) in
                     if let error = error {
-                        print("putData не удалось передать image в виде data")
                         callback?(error)
                         return
                     } else {
                         profileImgReference.downloadURL(completion: { (url, error) in
                             if let url = url{
+                                self.urlRefDelete = profileImgReference
                                 self.createProfileChangeRequest(photoURL: url, { (error) in
-                                    print("createProfileChangeRequest не изменил url")
                                     callback?(error)
                                     return
                                 })
                             }else{
-                                print("downloadURL не вернул url")
                                 callback?(error)
                                 return
                             }
@@ -614,7 +681,6 @@ import FirebaseStorageUI
             
             if let name = name {
                 self.createProfileChangeRequest(name: name) { error in
-                    print("createProfileChangeRequest сработал")
                     callback?(error)
                 }
             }
@@ -630,7 +696,6 @@ import FirebaseStorageUI
 
 extension ProfileViewController: SignInViewControllerDelegate {
     func userIsPermanent() {
-        print("userIsPermanent userIsPermanent userIsPermanent")
         guard let user = currentUser else {return}
         self.currentUserisPermanent(user)
     }
@@ -650,12 +715,16 @@ extension ProfileViewController: UIImagePickerControllerDelegate, UINavigationCo
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        imageUser.image = info[.editedImage] as? UIImage
+        let originImage = info[.editedImage] as? UIImage
+        let size = CGSize(width: 400, height: 400)
+        let compressedImage = originImage?.thumbnailOfSize(size)
+        imageReturn = imageUser.image
+        imageUser.image = compressedImage
         imageUser.contentMode = .scaleAspectFill
         imageUser.clipsToBounds = true
-        switchSaveButton(isSwitch: true)
-        imageData = (info[.editedImage] as? UIImage)?.pngData()
+        imageData = compressedImage?.jpegData(compressionQuality: 0.2)
         imageIsChanged = true
+        switchSaveButton(isSwitch: true)
         dismiss(animated: true, completion: nil)
         
     }
