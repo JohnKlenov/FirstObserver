@@ -35,11 +35,6 @@ import FirebaseStorageUI
         var currentUser: User?
         var addedToCardProducts: [PopularProduct] = []
         var isEditButton = true
-//        var isTimer = false {
-//            didSet {
-//                editOrDoneButton.setNeedsUpdateConfiguration()
-//            }
-//        }
 
         private let encoder = JSONEncoder()
         private let tapGestureRecognizer = UITapGestureRecognizer()
@@ -54,7 +49,7 @@ import FirebaseStorageUI
            
             storage = Storage.storage()
             Auth.auth().addStateDidChangeListener { (auth, user) in
-                print("Get User - \(user?.uid)")
+                print("Get User - \(String(describing: user?.uid))")
             self.currentUser = user
 
             if let user = user, !user.isAnonymous {
@@ -105,19 +100,6 @@ import FirebaseStorageUI
             if isEditButton {
                 stateEditSaveButton(isSwitch: isEditButton)
             } else {
-                
-//                editOrDoneButton.configurationUpdateHandler = { button in
-//                    var config = button.configuration
-//                    config?.showsActivityIndicator = self.isTimer
-//                    config?.title = self.isTimer ? "" : "Edit"
-//                    print("editOrDoneButton.configurationUpdateHandler")
-//                    button.isUserInteractionEnabled = !self.isTimer
-//                    button.configuration = config
-//                    if !self.isTimer {
-//                        self.editOrDoneButton.configurationUpdateHandler = nil
-//                    }
-//                }
-//                isTimer = true
                 editOrDoneButton.configuration?.title = ""
                 editOrDoneButton.configuration?.showsActivityIndicator = true
                 editOrDoneButton.isUserInteractionEnabled = false
@@ -134,22 +116,28 @@ import FirebaseStorageUI
                         print("\(String(describing: error))")
                         if let error = error as NSError? {
                             self.editOrDoneButton.configuration?.showsActivityIndicator = false
-//                            self.editOrDoneButton.configurationUpdateHandler = nil
                             self.switchSaveButton(isSwitch: false)
                             self.setupAlert(title: "Error", message: error.localizedDescription)
+                            // Если imageIsChanged == true && error == image.error {   }
+//                            if imageIsChanged {
+//                                imageData = nil
+//                                imageUser.image = imageReturn
+//                                imageIsChanged = false
+//                                imageReturn = nil
+//                            }
                         }
                     } else {
-                      
-                        // тут  мы удаляем прошлую аватар по урлу
-                        
-//                        self.isTimer = false
-//                        print("self.isTimer = false")
                         self.editOrDoneButton.configuration?.showsActivityIndicator = false
                         self.stateEditSaveButton(isSwitch: self.isEditButton)
                         self.setupAlert(title: "Success", message: "Data changed!")
-                        self.imageIsChanged = false
+                        
+                        if self.imageIsChanged {
+                            self.cacheImageRemoveMemoryAndDisk()
+                            self.imageIsChanged = false
+                            self.imageData = nil
+                            self.imageReturn = nil
+                        }
                     }
-                    
                 }
             }
         }
@@ -169,14 +157,12 @@ import FirebaseStorageUI
                 imageReturn = nil
             }
             cancelButton.isHidden = true
-//            emailUserTextField.text = currentUser?.email
             userNameTextField.text = currentUser?.displayName
             switchEditButton(isSwitch: true)
             userNameTextField.isUserInteractionEnabled = false
-//            emailUserTextField.isUserInteractionEnabled = false
             imageUser.isUserInteractionEnabled = false
             isEditButton = !isEditButton
-            }
+        }
         
        
        // когда мы signOut not updateUI
@@ -295,6 +281,7 @@ import FirebaseStorageUI
                 self.startDeleteRefImageUpdateUI()
                 self.urlRefDelete?.delete(completion: { error in
                     if error == nil {
+                        self.cacheImageRemoveMemoryAndDisk()
                         self.urlRefDelete = nil
                         self.resetProfileChangeRequest(reset: .photoURL) { error in
                             print("self.resetProfileChangeRequest(reset: .photoURL) - \(String(describing: error?.localizedDescription))")
@@ -443,38 +430,18 @@ import FirebaseStorageUI
             
             signOutButton.isHidden = false
             deleteAccountButton.isHidden = false
+            
             if let photoURL = user.photoURL?.absoluteString {
-                
                 let urlRef = storage.reference(forURL: photoURL)
-                imageUser.sd_setImage(with: urlRef, maxImageSize: 3602*10630, placeholderImage: UIImage(named: "DefaultImage"), options: .refreshCached) { (image, error, cashType, storageRef) in
-                    print("self.urlRefDelete = storageRef - \(storageRef.fullPath)")
+                imageUser.sd_setImage(with: urlRef, maxImageSize: 1024*1024, placeholderImage: UIImage(named: "DefaultImage"), options: .refreshCached) { (image, error, cashType, storageRef) in
                     self.urlRefDelete = storageRef
                     if error != nil {
-                        print("imageUser.sd_setImage - \(String(describing: error?.localizedDescription))")
                         self.imageUser.image = UIImage(named: "DefaultImage")
-                    } else {
-                        self.imageUser.image = image
-                        
                     }
                 }
             } else {
                 self.imageUser.image = UIImage(named: "DefaultImage")
-                print("not photoURL not photoURL not photoURL not photoURL")
             }
-//            let urlRef = storage.reference(forURL: user.photoURL?.absoluteString ?? "")
-            
-//            imageUser.sd_setImage(with: urlRef, maxImageSize: 3602*10630, placeholderImage: UIImage(named: "DefaultImage"), options: .refreshCached) { (image, error, cashType, storageRef) in
-//                print("self.urlRefDelete = storageRef - \(storageRef.fullPath)")
-//                self.urlRefDelete = storageRef
-//                if error != nil {
-//                    print("imageUser.sd_setImage - \(String(describing: error?.localizedDescription))")
-//                    self.imageUser.image = UIImage(named: "DefaultImage")
-//                } else {
-//                    self.imageUser.image = image
-//
-//                }
-//            }
-            
         }
         
         private func currentUserIsAnonymous() {
@@ -555,6 +522,13 @@ import FirebaseStorageUI
                         self.addedToCardProducts = homeVC.addedToCardProducts
                     }
                 }
+            }
+        }
+        
+        private func cacheImageRemoveMemoryAndDisk() {
+            if let cacheKey = self.imageUser.sd_imageURL?.absoluteString {
+                SDImageCache.shared.removeImageFromDisk(forKey: cacheKey)
+                SDImageCache.shared.removeImageFromMemory(forKey: cacheKey)
             }
         }
         

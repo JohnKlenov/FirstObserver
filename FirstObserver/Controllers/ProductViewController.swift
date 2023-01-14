@@ -69,6 +69,10 @@ class ProductViewController: UIViewController {
     var isSelectedAnnotation:Bool = false
     
     
+    // MARK: -Computer property? -
+    var userS: User? {
+        return Auth.auth().currentUser
+    }
     
     // MARK: - NewModel -
     
