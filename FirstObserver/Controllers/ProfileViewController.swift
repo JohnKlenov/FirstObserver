@@ -32,56 +32,62 @@ import FirebaseStorageUI
         
         @IBOutlet weak var signInSignUp: UIButton!
         
-        var currentUser: User?
-        var addedToCardProducts: [PopularProduct] = []
-        var isEditButton = true
+        
+        private var addedToCardProducts: [PopularProduct] = []
+        private var isStateEditButton = true
+        private var isAnimateDeleteButtonAnonUser = false
 
         private let encoder = JSONEncoder()
         private let tapGestureRecognizer = UITapGestureRecognizer()
         private var imageIsChanged = false
-        private var storage:Storage!
         private var imageData: Data?
-        var urlRefDelete: StorageReference?
         var imageReturn: UIImage?
+        
+        // MARK: FB property
+        let managerFB = FBManager.shared
+        private var currentUser: User?
+        private var storage:Storage!
+        var urlRefDelete: StorageReference?
+        
         
         override func viewDidLoad() {
             super.viewDidLoad()
-           
+//            testClosure {
+//                print("end testClosure")
+//            }
+            
             storage = Storage.storage()
-            Auth.auth().addStateDidChangeListener { (auth, user) in
-                print("Get User - \(String(describing: user?.uid))")
-            self.currentUser = user
-
-            if let user = user, !user.isAnonymous {
-                self.currentUserisPermanent(user)
-            } else {
-                self.currentUserIsAnonymous()
+//            Auth.auth().addStateDidChangeListener { (auth, user) in
+//                print("Get User - \(String(describing: user?.uid))")
+//            self.currentUser = user
+//
+//            if let user = user, !user.isAnonymous {
+//                self.currentUserisPermanent(user)
+//            } else {
+//                self.currentUserIsAnonymous()
+//            }
+//
+//        }
+            
+            managerFB.userListener { [weak self] (user) in
+                self?.currentUser = user
+                
+                if let user = user, !user.isAnonymous {
+                    self?.userIsPermanentUpdateUI(user)
+                } else {
+                    self?.UserIsAnonymousUpdateUI()
+                }
             }
             
-        }
-            shadowTopView()
+            shadowRadiusView()
             configureButton()
             configureTapGestureRecognizer()
         }
         
-        private func configureTapGestureRecognizer() {
-            tapGestureRecognizer.numberOfTapsRequired = 1
-            tapGestureRecognizer.addTarget(self, action: #selector(handleTapSingleGesture))
-            imageUser.addGestureRecognizer(tapGestureRecognizer)
-        }
-        
-       
-        
-        @objc func handleTapSingleGesture() {
-            setupAlertEditImageAvatar()
-        }
         
         
         override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
-           
-            print("viewWillAppear в ProfileViewController")
-
         }
         
         override func viewWillDisappear(_ animated: Bool) {
@@ -89,64 +95,145 @@ import FirebaseStorageUI
             self.addedToCardProducts = []
         }
         
-       
+        override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+            if segue.identifier == "signInVCfromProfile" {
+                getFetchDataHVC()
+                let destination = segue.destination as! SignInViewController
+                destination.addedToCardProducts = self.addedToCardProducts
+                destination.profileDelegate = self
+            }
+        }
        
         
         // MARK: - @IBAction func -
 
-
+//        func testClosure(callback: () -> Void) {
+//            print("before callback testClosure")
+//            callback()
+//            return
+//            if true {
+//                print("after callback testClosure")
+//            }
+//
+//        }
+       
+        
+        // MARK: - helper methods for func updateProfileInfo() -
+       
+        private func failedUpdateImage() {
+            editOrDoneButton.configuration?.showsActivityIndicator = false
+            switchSaveButton(isSwitch: false)
+            if imageIsChanged {
+                imageData = nil
+                imageUser.image = imageReturn
+                imageIsChanged = false
+                imageReturn = nil
+            }
+        }
+        private func successUpdateImage() {
+            if imageIsChanged {
+                cacheImageRemoveMemoryAndDisk()
+                imageIsChanged = false
+                imageData = nil
+                imageReturn = nil
+            }
+        }
+        
+        private func failedUpdateName() {
+            self.userNameTextField.text = self.currentUser?.displayName
+        }
+        
+        
         @IBAction func didTapEditOrDone(_ sender: UIButton) {
             
-            if isEditButton {
-                stateEditSaveButton(isSwitch: isEditButton)
+            if isStateEditButton {
+                stateEditSaveButton(isSwitch: isStateEditButton)
             } else {
                 editOrDoneButton.configuration?.title = ""
                 editOrDoneButton.configuration?.showsActivityIndicator = true
                 editOrDoneButton.isUserInteractionEnabled = false
-                print("isTimer = true")
-                // проверка email and name на validation neaded
-                // зачем нам тут проверка email и name если мы это делаем в didChangeTextField?
-                // email мы уже not edit
-                
+  
                 let image = imageIsChanged ? imageData : nil
-                
-                updateProfileInfo(withImage: image, name: userNameTextField.text != currentUser?.displayName ? userNameTextField.text : nil) { error in
-                    if error != nil {
-                        // тут нужно отлавливать ошибку пришедшую из name и image
-                        print("\(String(describing: error))")
-                        if let error = error as NSError? {
+                // if currentUser = nil ???
+                let name = userNameTextField.text != currentUser?.displayName ? userNameTextField.text : nil
+
+                managerFB.updateProfileInfo(withImage: image, name: name) { (state) in
+                    
+                    switch state {
+                        
+                    case .success:
+                        print("case .success:")
+                        self.editOrDoneButton.configuration?.showsActivityIndicator = false
+                        self.stateEditSaveButton(isSwitch: self.isStateEditButton)
+                        self.setupAlert(title: "Success", message: "Data changed!")
+                        self.successUpdateImage()
+                        
+                    case .failed(image: let image, name: let name):
+                        if let image = image, let name = name {
+                        print("\(image) \(name)")
+                            if image && name {
+                                print("!!!!@@@@#####case .failed(image: let image, name: let name):")
+                                self.failedUpdateImage()
+                                self.failedUpdateName()
+                                self.setupAlert(title: "Error", message: "Something went wrong! Try again!")
+                            } else if image {
+                                self.failedUpdateImage()
+                                self.setupAlert(title: "Error", message: "Avatar not saved! Try again!")
+                                
+                            } else if name {
+                                
+                                self.editOrDoneButton.configuration?.showsActivityIndicator = false
+                                self.switchSaveButton(isSwitch: false)
+                                self.failedUpdateName()
+                                self.successUpdateImage()
+                                self.setupAlert(title: "Error", message: "Name not saved! Try again!")
+                            }
+                        } else if let name = name, name {
+                            print("case .failed - Name not saved! Try again!")
                             self.editOrDoneButton.configuration?.showsActivityIndicator = false
                             self.switchSaveButton(isSwitch: false)
-                            self.setupAlert(title: "Error", message: error.localizedDescription)
-                            // Если imageIsChanged == true && error == image.error {   }
-//                            if imageIsChanged {
-//                                imageData = nil
-//                                imageUser.image = imageReturn
-//                                imageIsChanged = false
-//                                imageReturn = nil
-//                            }
+                            self.failedUpdateName()
+                            self.setupAlert(title: "Error", message: "Name not saved! Try again!")
                         }
-                    } else {
+                    case .nul:
                         self.editOrDoneButton.configuration?.showsActivityIndicator = false
-                        self.stateEditSaveButton(isSwitch: self.isEditButton)
-                        self.setupAlert(title: "Success", message: "Data changed!")
+                        self.switchSaveButton(isSwitch: false)
                         
-                        if self.imageIsChanged {
-                            self.cacheImageRemoveMemoryAndDisk()
-                            self.imageIsChanged = false
-                            self.imageData = nil
-                            self.imageReturn = nil
-                        }
                     }
-                }
+            }
             }
         }
         
-        func fetchDataImage() {
-            
-        }
-                
         
+//                        updateProfileInfo(withImage: image, name: name) { error in
+//                            if error != nil {
+//                                // тут нужно отлавливать ошибку пришедшую из name и image
+//                                print("\(String(describing: error))")
+//                                if let error = error as NSError? {
+//                                    self.editOrDoneButton.configuration?.showsActivityIndicator = false
+//                                    self.switchSaveButton(isSwitch: false)
+//                                    self.setupAlert(title: "Error", message: error.localizedDescription)
+//                                    // Если imageIsChanged == true && error == image.error {   }
+////                                    if imageIsChanged {
+////                                        imageData = nil
+////                                        imageUser.image = imageReturn
+////                                        imageIsChanged = false
+////                                        imageReturn = nil
+////                                    }
+//                                }
+//                            } else {
+//                                self.editOrDoneButton.configuration?.showsActivityIndicator = false
+//                                self.stateEditSaveButton(isSwitch: self.isStateEditButton)
+//                                self.setupAlert(title: "Success", message: "Data changed!")
+//
+//                                if self.imageIsChanged {
+//                                    self.cacheImageRemoveMemoryAndDisk()
+//                                    self.imageIsChanged = false
+//                                    self.imageData = nil
+//                                    self.imageReturn = nil
+//                                }
+//                            }
+//                        }
 
         @IBAction func didTapCancel(_ sender: UIButton) {
             
@@ -161,13 +248,14 @@ import FirebaseStorageUI
             switchEditButton(isSwitch: true)
             userNameTextField.isUserInteractionEnabled = false
             imageUser.isUserInteractionEnabled = false
-            isEditButton = !isEditButton
+            isStateEditButton = !isStateEditButton
         }
         
        
        // когда мы signOut not updateUI
         //
         @IBAction func didTapSignOut(_ sender: UIButton) {
+            isAnimateDeleteButtonAnonUser = true
             signOutButton.configuration?.showsActivityIndicator = true
             do {
                 try Auth.auth().signOut()
@@ -175,6 +263,7 @@ import FirebaseStorageUI
                 signOutButton.configuration?.showsActivityIndicator = false
                 print("Что то пошло не так c didTapSignOut!")
                 print(error.localizedDescription)
+                isAnimateDeleteButtonAnonUser = false
             }
         }
   
@@ -187,22 +276,21 @@ import FirebaseStorageUI
 //            }
         }
         
-        override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-            if segue.identifier == "signInVCfromProfile" {
-                getFetchDataHVC()
-                let destination = segue.destination as! SignInViewController
-                destination.addedToCardProducts = self.addedToCardProducts
-                destination.profileDelegate = self
-            }
-            
+        
+        @objc func handleTapSingleGesture() {
+            setupAlertEditImageAvatar()
         }
+        
            
         
         @IBAction func didTapDeleteAccount(_ sender: UIButton) {
             
+            
             getFetchDataHVC()
             setupDeleteAlert(title: "Warning", message: "Deleting your account will permanently lose your data!") { isDelete in
+
                 if isDelete {
+                    self.isAnimateDeleteButtonAnonUser = true
                     self.deleteUserProducts()
                     self.deleteAccountButton.configuration?.showsActivityIndicator = true
                     self.deleteAccaunt { error in
@@ -215,16 +303,19 @@ import FirebaseStorageUI
                                 case 17014:
                                     self.wrapperOverDeleteAlert(title: "Error", message: "Enter the password for \(self.currentUser?.email ?? "the current account") to delete your account!")
                                 default:
+                                    self.isAnimateDeleteButtonAnonUser = false
                                     self.setupFailedAlertDeleteAccount(title: "Failed", message: "Something went wrong. Try again!")
+                                    
                                 }
                             }
                         } else {
-                            self.setupAlert(title: "Success", message: "Current accaunt delete!")
                             self.deleteAccountButton.configuration?.showsActivityIndicator = false
-                            self.currentUserIsAnonymous()
+                            self.automaticDeleteAvatarUser()
+                            self.setupAlert(title: "Success", message: "Current accaunt delete!")
                         }
                     }
                 } else {
+                    self.isAnimateDeleteButtonAnonUser = false
                     print("Cancel delete Accaunt!")
                 }
             }
@@ -233,6 +324,7 @@ import FirebaseStorageUI
         
         @IBAction func didChangeTextFieldNameOrEmail(_ sender: UITextField) {
             isValidTextField { (isValid) in
+//                nameReturn = isValid ? userNameTextField.text : nil
                 switchSaveButton(isSwitch: isValid)
             }
         }
@@ -240,25 +332,6 @@ import FirebaseStorageUI
 
         
         // MARK: - Alerts -
-        
-        private func startDeleteRefImageUpdateUI() {
-            editOrDoneButton.configuration?.title = ""
-            editOrDoneButton.configuration?.showsActivityIndicator = true
-            editOrDoneButton.isUserInteractionEnabled = false
-        }
-        
-        private func endDeleteRefImageUpdateUI() {
-            self.editOrDoneButton.configuration?.showsActivityIndicator = false
-            self.stateEditSaveButton(isSwitch: self.isEditButton)
-            self.setupAlert(title: "Success", message: "Profile avatar is delete!")
-            self.imageIsChanged = false
-        }
-        
-        private func errorDeleteRefImageUpdateUI(error:NSError) {
-            self.editOrDoneButton.configuration?.showsActivityIndicator = false
-            self.switchSaveButton(isSwitch: false)
-            self.setupAlert(title: "Failed to delete profile avatar", message: error.localizedDescription)
-        }
         
         
         private func setupAlertEditImageAvatar() {
@@ -313,6 +386,7 @@ import FirebaseStorageUI
             present(alert, animated: true, completion: nil)
             
         }
+            
         
         // Log in again before retrying this request
         private func setupAlertRecentLogin(title:String, message:String, placeholder: String, completionHandler: @escaping (String) -> Void ) {
@@ -327,6 +401,7 @@ import FirebaseStorageUI
             
             let actionCancel = UIAlertAction(title: "Cancel", style: .cancel) { action in
                 print("did cancel")
+                // isDelete = false
                 self.saveRemuveCartProductFB()
             }
             
@@ -355,16 +430,19 @@ import FirebaseStorageUI
                                 // тут вызвать вместо setupFailedAlertDeleteAccount -> user.reauthenticate(with: credential)
                                 // потому что иначе мы заново будем создавать удаление -> deleteAccaunt { error in } а оно уже вызвано и привело сюда.
                                 // или написать [weak self] в setupAlertRecentLogin
+                                
+                                self.isAnimateDeleteButtonAnonUser = false
                                 self.setupFailedAlertDeleteAccount(title: "Failed", message: "Something went wrong. Try again later!")
                             }
                             
                         } else {
                             self.deleteAccaunt { error in
                                 if error == nil {
+                                    self.automaticDeleteAvatarUser()
                                     self.deleteAccountButton.configuration?.showsActivityIndicator = false
-                                    self.currentUserIsAnonymous()
                                     self.setupAlert(title: "Success", message: "Current accaunt delete!")
                                 } else {
+                                    self.isAnimateDeleteButtonAnonUser = false
                                     self.deleteAccountButton.configuration?.showsActivityIndicator = false
                                     self.setupFailedAlertDeleteAccount(title: "Failed", message: "Something went wrong. Try again!")
                                 }
@@ -378,7 +456,10 @@ import FirebaseStorageUI
         private func setupAlert(title: String, message: String) {
             
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+//            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            let okAction = UIAlertAction(title: "OK", style: .default) { action in
+                
+            }
             alert.addAction(okAction)
             present(alert, animated: true, completion: nil)
         }
@@ -407,7 +488,7 @@ import FirebaseStorageUI
                 print("Did Cancel")
                 isDeleteCompletion(false)
             }
-            
+    
             alert.addAction(deleteAction)
             alert.addAction(cancelAction)
             present(alert, animated: true) {
@@ -418,7 +499,7 @@ import FirebaseStorageUI
         
         // MARK: - helper methods -
         
-        private func currentUserisPermanent(_ user:User) {
+        private func userIsPermanentUpdateUI(_ user:User) {
             editOrDoneButton.isHidden = false
             emailUserTextField.isHidden = false
             emailUserTextField.text = user.email
@@ -444,7 +525,7 @@ import FirebaseStorageUI
             }
         }
         
-        private func currentUserIsAnonymous() {
+        private func UserIsAnonymousUpdateUI() {
             editOrDoneButton.isHidden = true
             cancelButton.isHidden = true
             userNameTextField.text = "User is anonymous"
@@ -454,16 +535,61 @@ import FirebaseStorageUI
             emailUserTextField.isHidden = true
             signInSignUp.isHidden = false
             signOutButton.configuration?.showsActivityIndicator = false
-            signOutButton.isHidden = true
-            deleteAccountButton.isHidden = true
-//            UIView.animate(withDuration: 0.3) {
-//                self.signInSignUp.isHidden = false
-//                self.signOutButton.isHidden = true
-//                self.deleteAccountButton.isHidden = true
-//
-//            }
-           
+            if isAnimateDeleteButtonAnonUser {
+                UIView.animate(withDuration: 0.2) {
+                    self.signOutButton.isHidden = true
+                    self.deleteAccountButton.isHidden = true
+                    self.isAnimateDeleteButtonAnonUser = false
+                }
+            } else {
+                signOutButton.isHidden = true
+                deleteAccountButton.isHidden = true
+            }
+            
         }
+        
+        private func configureTapGestureRecognizer() {
+            tapGestureRecognizer.numberOfTapsRequired = 1
+            tapGestureRecognizer.addTarget(self, action: #selector(handleTapSingleGesture))
+            imageUser.addGestureRecognizer(tapGestureRecognizer)
+        }
+        
+        
+        private func automaticDeleteAvatarUser() {
+            guard let urlRefDelete = urlRefDelete else {
+                return
+            }
+            urlRefDelete.delete { error in
+                if error != nil {
+                    print("\(String(describing: error?.localizedDescription))")
+                } else {
+                    print("urlRefDelete.delete success!!!")
+                }
+                
+            }
+
+        }
+        
+        private func startDeleteRefImageUpdateUI() {
+            editOrDoneButton.configuration?.title = ""
+            editOrDoneButton.configuration?.showsActivityIndicator = true
+            editOrDoneButton.isUserInteractionEnabled = false
+        }
+        
+        private func endDeleteRefImageUpdateUI() {
+            self.editOrDoneButton.configuration?.showsActivityIndicator = false
+            self.stateEditSaveButton(isSwitch: self.isStateEditButton)
+            self.setupAlert(title: "Success", message: "Profile avatar is delete!")
+            self.imageIsChanged = false
+        }
+        
+        private func errorDeleteRefImageUpdateUI(error:NSError) {
+            self.editOrDoneButton.configuration?.showsActivityIndicator = false
+            self.switchSaveButton(isSwitch: false)
+            self.setupAlert(title: "Failed to delete profile avatar", message: error.localizedDescription)
+        }
+        
+        
         
         private func isValidTextField(comletion: (Bool) -> Void) {
             // logic valid email need not
@@ -491,7 +617,7 @@ import FirebaseStorageUI
              self.cancelButton.isHidden = !isSwitch
              self.userNameTextField.isUserInteractionEnabled = isSwitch
              self.imageUser.isUserInteractionEnabled = isSwitch
-             self.isEditButton = !isSwitch
+             self.isStateEditButton = !isSwitch
         }
         
         private func switchSaveButton(isSwitch: Bool) {
@@ -506,7 +632,7 @@ import FirebaseStorageUI
             editOrDoneButton.isUserInteractionEnabled = isSwitch ? true : false
         }
         
-        private func shadowTopView() {
+        private func shadowRadiusView() {
             radiusViewForTopView.layer.shadowOffset = CGSize(width: 0, height: 10)
             radiusViewForTopView.layer.shadowOpacity = 0.7
             radiusViewForTopView.layer.shadowRadius = 5
@@ -671,7 +797,7 @@ import FirebaseStorageUI
 extension ProfileViewController: SignInViewControllerDelegate {
     func userIsPermanent() {
         guard let user = currentUser else {return}
-        self.currentUserisPermanent(user)
+        self.userIsPermanentUpdateUI(user)
     }
 }
 
@@ -691,6 +817,7 @@ extension ProfileViewController: UIImagePickerControllerDelegate, UINavigationCo
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         let originImage = info[.editedImage] as? UIImage
         let size = CGSize(width: 400, height: 400)
+        // а что если compressedImage придет nil?
         let compressedImage = originImage?.thumbnailOfSize(size)
         imageReturn = imageUser.image
         imageUser.image = compressedImage

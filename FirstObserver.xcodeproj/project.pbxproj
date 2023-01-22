@@ -51,11 +51,13 @@
 		5E7EF59628AE5B2200814F4D /* ProductCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7EF59528AE5B2200814F4D /* ProductCollectionViewCell.swift */; };
 		5E890BBA290AA16D00147C5F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5E890BB9290AA16D00147C5F /* GoogleService-Info.plist */; };
 		5E890BBC290AB57E00147C5F /* ModelFB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E890BBB290AB57D00147C5F /* ModelFB.swift */; };
+		5E8C62BE297534B30089F430 /* AlertControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8C62BD297534B30089F430 /* AlertControllers.swift */; };
 		5E8DC52628D5BCB400275138 /* ContaktMallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8DC52528D5BCB400275138 /* ContaktMallViewController.swift */; };
 		5E8DC52828D5DEF100275138 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8DC52728D5DEF000275138 /* MapViewController.swift */; };
 		5E8DC52C28D9F37C00275138 /* CustomMapViewProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8DC52B28D9F37C00275138 /* CustomMapViewProduct.swift */; };
 		5E9101DC291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9101DB291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift */; };
 		5E9101DF291CFE4B00D37E92 /* ChildCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9101DE291CFE4B00D37E92 /* ChildCollectionViewController.swift */; };
+		5E9C8E04297A7EF1009855AE /* FBManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9C8E03297A7EF1009855AE /* FBManager.swift */; };
 		5E9DF45D2968A425006544F9 /* UIView + extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9DF45C2968A425006544F9 /* UIView + extension.swift */; };
 		5EA9446E294B0522007C2AB5 /* Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA9446D294B0522007C2AB5 /* Alerts.swift */; };
 		5EA94471294B5773007C2AB5 /* AlertTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA94470294B5773007C2AB5 /* AlertTopView.swift */; };
@@ -112,11 +114,13 @@
 		5E7EF59528AE5B2200814F4D /* ProductCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductCollectionViewCell.swift; sourceTree = "<group>"; };
 		5E890BB9290AA16D00147C5F /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5E890BBB290AB57D00147C5F /* ModelFB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFB.swift; sourceTree = "<group>"; };
+		5E8C62BD297534B30089F430 /* AlertControllers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertControllers.swift; sourceTree = "<group>"; };
 		5E8DC52528D5BCB400275138 /* ContaktMallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContaktMallViewController.swift; sourceTree = "<group>"; };
 		5E8DC52728D5DEF000275138 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		5E8DC52B28D9F37C00275138 /* CustomMapViewProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMapViewProduct.swift; sourceTree = "<group>"; };
 		5E9101DB291B9FBA00D37E92 /* ImageMallCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageMallCollectionViewCell.swift; sourceTree = "<group>"; };
 		5E9101DE291CFE4B00D37E92 /* ChildCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildCollectionViewController.swift; sourceTree = "<group>"; };
+		5E9C8E03297A7EF1009855AE /* FBManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FBManager.swift; sourceTree = "<group>"; };
 		5E9DF45C2968A425006544F9 /* UIView + extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView + extension.swift"; sourceTree = "<group>"; };
 		5EA9446D294B0522007C2AB5 /* Alerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alerts.swift; sourceTree = "<group>"; };
 		5EA94470294B5773007C2AB5 /* AlertTopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertTopView.swift; sourceTree = "<group>"; };
@@ -193,6 +197,7 @@
 				5EBD49A629449F6C00E27F2F /* AlertText.swift */,
 				5EA9446D294B0522007C2AB5 /* Alerts.swift */,
 				5E9DF45C2968A425006544F9 /* UIView + extension.swift */,
+				5E8C62BD297534B30089F430 /* AlertControllers.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -241,6 +246,7 @@
 		5E7EF55D28A12DBB00814F4D /* FirstObserver */ = {
 			isa = PBXGroup;
 			children = (
+				5E9C8E02297A7EC9009855AE /* FBManager */,
 				5E7E2D9C29211EEC00A2F462 /* MapManager */,
 				5E759F0C28BE12D700D17F13 /* Helpers */,
 				5E7EF58528A53B5000814F4D /* Views */,
@@ -357,6 +363,14 @@
 				5E9101DE291CFE4B00D37E92 /* ChildCollectionViewController.swift */,
 			);
 			path = childCVC;
+			sourceTree = "<group>";
+		};
+		5E9C8E02297A7EC9009855AE /* FBManager */ = {
+			isa = PBXGroup;
+			children = (
+				5E9C8E03297A7EF1009855AE /* FBManager.swift */,
+			);
+			path = FBManager;
 			sourceTree = "<group>";
 		};
 		5EA9446F294B5706007C2AB5 /* viewsSignInVC */ = {
@@ -505,6 +519,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5E175A4328CB6ED100773C77 /* ProductViewController.swift in Sources */,
+				5E9C8E04297A7EF1009855AE /* FBManager.swift in Sources */,
 				5EBD49A729449F6C00E27F2F /* AlertText.swift in Sources */,
 				5E7EF57F28A51B0100814F4D /* ShopingMallCell.swift in Sources */,
 				5EA94471294B5773007C2AB5 /* AlertTopView.swift in Sources */,
@@ -540,6 +555,7 @@
 				5E139C5A28C4BEF9004F963D /* AllProductViewController.swift in Sources */,
 				5EA9446E294B0522007C2AB5 /* Alerts.swift in Sources */,
 				5E731C9428E443F600AF3A21 /* SignInViewController.swift in Sources */,
+				5E8C62BE297534B30089F430 /* AlertControllers.swift in Sources */,
 				5E74BCC828EEEF9B0048D097 /* Validators.swift in Sources */,
 				5E7EF58128A51B2A00814F4D /* BrandCell.swift in Sources */,
 				5E890BBC290AB57E00147C5F /* ModelFB.swift in Sources */,

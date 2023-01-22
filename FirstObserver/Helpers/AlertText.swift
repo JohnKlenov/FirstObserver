@@ -10,14 +10,14 @@ import Foundation
 
 // Create text messege from allertController
 
-enum AlertMessege: String {
-    
-    case youAnonymousUser = "You are now an anonymous user! When you switch to a new account, you will lose items in your shopping cart"
-    
-}
-
-enum AlertTitle: String {
-    
-    case logIn = "Log In"
-    
-}
+//enum AlertMessege: String {
+//
+//    case youAnonymousUser = "You are now an anonymous user! When you switch to a new account, you will lose items in your shopping cart"
+//
+//}
+//
+//enum AlertTitle: String {
+//
+//    case logIn = "Log In"
+//
+//}
