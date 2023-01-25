@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 
 
+
 extension String {
     
     func widthOfString(usingFont font:UIFont) -> CGFloat {

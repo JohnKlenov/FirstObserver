@@ -8,7 +8,7 @@
 import Foundation
 
 import UIKit
-import FirebaseAuth
+//import FirebaseAuth
 import Firebase
 import FirebaseStorage
 import FirebaseStorageUI
@@ -22,11 +22,34 @@ enum StateProfileInfo {
     case nul
 }
 
+enum StateCallback {
+    case success
+    case failed
+}
+
+enum StateDeleteAccaunt {
+    case success
+    case failed
+    case failedRequiresRecentLogin
+}
+enum StateReauthenticateUser {
+    case wrongPassword
+    case success
+    case failed
+}
+
+enum ResetProfile {
+    case name
+    case photoURL
+}
+
 final class FBManager {
     
     static let shared = FBManager()
     var currentUser: User?
-    var urlRefDelete: StorageReference?
+    var avatarRef: StorageReference?
+//    var storage = Storage.storage()
+    
     
     func userListener(currentUser: @escaping (User?) -> Void) {
         
@@ -45,10 +68,8 @@ final class FBManager {
         if let image = image{
             imageChangeRequest(user: user, image: image) { (error) in
                 let imageIsFailed = error != nil ? true: false
-                print("imageChangeRequest \(imageIsFailed)")
                 self.createProfileChangeRequest(name: name) { (error) in
                     let nameIsFailed = error != nil ? true: false
-                    print("let nameIsFailed = error != nil ? true: false - \(nameIsFailed)")
                     if !imageIsFailed, !nameIsFailed {
                         callback?(.success)
                     } else {
@@ -57,7 +78,6 @@ final class FBManager {
                 }
             }
         } else if let name = name {
-            print("else if let name = name {")
             self.createProfileChangeRequest(name: name) { error in
                 let nameIsFailed = error != nil ? true: false
                 if !nameIsFailed {
@@ -74,8 +94,6 @@ final class FBManager {
     func imageChangeRequest(user:User, image:Data,  _ callback: ((Error?) -> ())? = nil) {
         // если пытаемся добавить image когда нет wifi
         // при Database.database().isPersistenceEnabled = true error в profileImgReference.putData не возвращается ждет сети
-        print("±±±±±±±±±imageChangeRequest imageChangeRequest")
-    
             let profileImgReference = Storage.storage().reference().child("profile_pictures").child("\(user.uid).jpeg")
             _ = profileImgReference.putData(image, metadata: nil) { (metadata, error) in
                 if let error = error {
@@ -84,8 +102,9 @@ final class FBManager {
                 } else {
                     profileImgReference.downloadURL(completion: { (url, error) in
                         if let url = url{
-                            self.urlRefDelete = profileImgReference
+                            self.avatarRef = profileImgReference
                             self.createProfileChangeRequest(photoURL: url) { (error) in
+                                // если сдесь произошла ошибка что делать с image в storage и urlRefDelete?
                                 callback?(error)
                             }
                         }else{
@@ -116,8 +135,72 @@ final class FBManager {
         }
     }
     
+    func resetProfileChangeRequest(reset: ResetProfile,_ callBack: ((Error?) -> Void)? = nil) {
+        
+        if let request = Auth.auth().currentUser?.createProfileChangeRequest() {
+            
+            switch reset {
+                
+            case .name:
+                request.displayName = nil
+            case .photoURL:
+                request.photoURL = nil
+            }
+            request.commitChanges { error in
+                callBack?(error)
+            }
+        }
+    }
+    func removeAvatarFromDeletedUser() {
+        
+        avatarRef?.delete(completion: { error in
+                self.avatarRef = nil
+        })
+    }
+    func removeAvatarFromCurrentUser(_ callback: @escaping (StateCallback) -> Void) {
+        avatarRef?.delete(completion: { error in
+            if error == nil {
+                self.avatarRef = nil
+                self.resetProfileChangeRequest(reset: .photoURL) { error in
+                    if error != nil {
+                        print("Не удалось удалить старую photoURL в currentUser")
+//                        callback(.failed)
+//                        return
+                    }
+                }
+                callback(.success)
+            } else {
+                callback(.failed)
+            }
+        })
+    }
+    
+    func addUidFromCurrentUserAccount() {
+        guard let currentUser = currentUser else {
+            return
+        }
+        let refFBR = Database.database().reference()
+        refFBR.child("usersAccaunt/\(currentUser.uid)").setValue(["uidCurrentUser":currentUser.uid])
+    }
+    
+    func addProductsToANonRemoteUser(products: [String:Any]) {
+        guard let currentUser = currentUser else {
+            return
+        }
+        let ref = Database.database().reference(withPath: "usersAccaunt/\(currentUser.uid)/AddedProducts")
+        ref.updateChildValues(products)
+    }
+    
+    func cacheImageRemoveMemoryAndDisk(imageView: UIImageView) {
+        if let cacheKey = imageView.sd_imageURL?.absoluteString {
+            SDImageCache.shared.removeImageFromDisk(forKey: cacheKey)
+            SDImageCache.shared.removeImageFromMemory(forKey: cacheKey)
+        }
+    }
+    
     func updateEmail(to: String, callBack: @escaping (Error?) -> Void) {
         currentUser?.updateEmail(to: to, completion: { (error) in
+           
             
             if let error = error as? AuthErrorCode {
                 switch error.code {
@@ -135,12 +218,78 @@ final class FBManager {
         })
     }
     
+    func signOut(_ callback: (StateCallback) -> Void) {
+        do {
+            try Auth.auth().signOut()
+            callback(.success)
+        } catch {
+            // AuthErrorCodeKeychainError` — Указывает, что произошла ошибка при доступе к цепочке ключей. Поле NSLocalizedFailureReasonErrorKey в словаре userInfo будет содержать дополнительную информацию
+            callback(.failed)
+        }
+    }
     
+    func deleteAccaunt(_ callback: @escaping (StateDeleteAccaunt) -> Void) {
+        
+        guard let user = currentUser else {return}
+        
+        user.delete { (error) in
+            if let error = error as? AuthErrorCode {
+                switch error.code {
+                case .requiresRecentLogin:
+                    callback(.failedRequiresRecentLogin)
+                default:
+                    callback(.failed)
+                }
+            } else {
+                callback(.success)
+            }
+        }
+    }
     
+    func deleteCurrentUserProducts() {
+        if let user = currentUser {
+            let uid = user.uid
+            Database.database().reference().child("usersAccaunt").child(uid).removeValue()
+        }
+    }
+    
+    func reauthenticateUser(password: String, callback: @escaping (StateReauthenticateUser) -> Void) {
+        guard let user = currentUser, let email = user.email else {return}
+        
+        let credential = EmailAuthProvider.credential(withEmail: email, password: password)
+        
+        user.reauthenticate(with: credential) { (result, error) in
+            if let error = error as? AuthErrorCode {
+                switch error.code {
+                case .wrongPassword:
+                    callback(.wrongPassword)
+                default:
+                    callback(.failed)
+                }
+            } else {
+                callback(.success)
+            }
+        }
+    }
     
 }
 
 
+extension UIImageView {
+    
+  
+    
+    func fetchingImageWithPlaceholder(url: String, placeholder: String) {
+        let storage = Storage.storage()
+        let urlRef = storage.reference(forURL: url)
+        self.sd_setImage(with: urlRef, maxImageSize: 1024*1024, placeholderImage: UIImage(named: placeholder), options: .refreshCached) { (image, error, cashType, storageRef) in
+            FBManager.shared.avatarRef = storageRef
+            if error != nil {
+                self.image = UIImage(named: placeholder)
+            }
+        }
+    }
+}
 
 
 /*
